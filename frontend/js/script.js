@@ -24,7 +24,7 @@ if (registerForm) {
       return;
     }
 
-    fetch("http://localhost:8080/api/auth/register", {
+    fetch("http://localhost:8081/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -72,7 +72,7 @@ if (otpForm) {
       return;
     }
 
-    fetch("http://localhost:8080/api/auth/verify", {
+    fetch("http://localhost:8081/auth/verify-otp", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -117,7 +117,7 @@ if (loginForm) {
       return;
     }
 
-    fetch("http://localhost:8080/api/auth/login", {
+    fetch("http://localhost:8081/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -170,7 +170,7 @@ if (window.location.pathname.includes("profile.html")) {
 
   const token = localStorage.getItem("token");
 
-  fetch("http://localhost:8080/api/profile", {
+  fetch("http://localhost:8081/profile/me", {
     method: "GET",
     headers: {
       "Authorization": "Bearer " + token
@@ -208,7 +208,7 @@ if (profileForm) {
     const name = document.getElementById("profileName").value;
     const phone = document.getElementById("profilePhone").value;
 
-    fetch("http://localhost:8080/api/profile/update", {
+    fetch("http://localhost:8081/profile/update", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

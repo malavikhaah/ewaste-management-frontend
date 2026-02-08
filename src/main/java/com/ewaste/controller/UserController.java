@@ -2,6 +2,7 @@ package com.ewaste.controller;
 
 import com.ewaste.dto.AuthResponse;
 import com.ewaste.dto.EmailRequest;
+import com.ewaste.dto.LoginRequest;
 import com.ewaste.dto.OtpVerifyRequest;
 import com.ewaste.dto.RegisterRequest;
 import com.ewaste.service.UserService;
@@ -38,6 +39,12 @@ public class UserController {
     @PostMapping("/login/verify-otp")
     public AuthResponse verifyLoginOtp(@RequestBody OtpVerifyRequest request) {
         String token = service.verifyLoginOtp(request.getEmail(), request.getOtp());
+        return new AuthResponse("Login successful", token);
+    }
+
+    @PostMapping("/login")
+    public AuthResponse login(@RequestBody LoginRequest request) {
+        String token = service.loginWithPassword(request.getEmail(), request.getPassword());
         return new AuthResponse("Login successful", token);
     }
 }
