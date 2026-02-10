@@ -132,6 +132,20 @@ public class UserService {
         return jwtService.generateToken(user.getEmail());
     }
 
+    public String loginWithPassword(String email, String password) {
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email and password are required");
+        }
+        User user = userRepo.findByEmail(email);
+        if (user == null || Boolean.FALSE.equals(user.getIsVerified())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found");
+        }
+        if (user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credentials");
+        }
+        return jwtService.generateToken(user.getEmail());
+    }
+
     private String generateOtp() {
         int number = 100000 + random.nextInt(900000);
         return String.valueOf(number);
