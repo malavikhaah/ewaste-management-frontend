@@ -1,36 +1,67 @@
-﻿import { useNavigate } from "react-router-dom";
+﻿import { Link, useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const onLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+  const handleLogout = () => {
+    localStorage.removeItem("token");   // remove JWT
+    navigate("/");                      // go to landing page
   };
 
   return (
-    <div className="page-shell">
-      <div className="page-header">
-        <div>
-          <div className="page-title">Dashboard</div>
-          <div className="page-subtitle">Welcome back</div>
-        </div>
-        <button className="btn ghost" onClick={onLogout}>
-          Logout
-        </button>
-      </div>
+    <div className="home-shell">
 
-      <div className="hero-card">
-        <div>
-          <h1>Welcome</h1>
-          <p>
-            You are successfully logged in.
-          </p>
-          <button className="btn primary" onClick={() => navigate("/profile")}>
-            Go to Profile
-          </button>
+      {/* 🔹 Top Navigation Bar */}
+      <header className="home-header">
+
+        {/* Brand */}
+        <div className="brand">
+          <div className="brand-mark">EW</div>
+          <div>
+            <div className="brand-name">E-Waste Management</div>
+            <div className="brand-tag">
+              Sustainable disposal made simple
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* Navigation Buttons */}
+        <div className="home-header-actions">
+
+          {/* ✅ Profile Link */}
+          <Link to="/profile/me" className="btn ghost">
+            Profile
+          </Link>
+
+          {/* ✅ Logout */}
+          <button className="btn primary" onClick={handleLogout}>
+            Logout
+          </button>
+
+        </div>
+      </header>
+
+      {/* 🔹 Middle Content */}
+      <section className="home-hero-centered">
+        <div className="home-hero-content">
+
+          <div className="home-pill">
+            🌱 Smart Recycling Dashboard
+          </div>
+
+          <h1 className="home-headline">
+            Welcome to Your <span className="home-highlight">Dashboard</span>
+          </h1>
+
+          <p className="home-subtitle">
+            This platform helps you dispose electronic waste responsibly.
+            Schedule pickups, monitor recycling progress, and contribute
+            towards a cleaner and greener environment.
+          </p>
+
+        </div>
+      </section>
+
     </div>
   );
 }

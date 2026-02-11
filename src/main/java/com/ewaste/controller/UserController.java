@@ -6,8 +6,12 @@ import com.ewaste.dto.LoginRequest;
 import com.ewaste.dto.OtpVerifyRequest;
 import com.ewaste.dto.RegisterRequest;
 import com.ewaste.service.UserService;
+
+import jakarta.validation.Valid;   // ✅ ADDED IMPORT
+
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 public class UserController {
@@ -18,33 +22,33 @@ public class UserController {
         this.service = service;
     }
 
+    // ✅ VALIDATION ENABLED HERE
     @PostMapping("/register")
-    public Map<String, String> registerUser(@RequestBody RegisterRequest request) {
+    public Map<String, String> registerUser(
+            @Valid @RequestBody RegisterRequest request) {
+
         String message = service.registerUser(request);
         return Map.of("message", message);
     }
 
     @PostMapping("/verify-otp")
     public AuthResponse verifyOtp(@RequestBody OtpVerifyRequest request) {
-        String token = service.verifyOtp(request.getEmail(), request.getOtp());
+        String token = service.verifyOtp(
+                request.getEmail(),
+                request.getOtp()
+        );
         return new AuthResponse("Registration successful", token);
     }
 
     @PostMapping("/login/request-otp")
-    public Map<String, String> requestLoginOtp(@RequestBody EmailRequest request) {
-        String message = service.requestLoginOtp(request.getEmail());
+    public Map<String, String> requestLoginOtp(
+            @RequestBody EmailRequest request) {
+
+        String message = service.requestLoginOtp(
+                request.getEmail()
+        );
         return Map.of("message", message);
     }
 
     @PostMapping("/login/verify-otp")
-    public AuthResponse verifyLoginOtp(@RequestBody OtpVerifyRequest request) {
-        String token = service.verifyLoginOtp(request.getEmail(), request.getOtp());
-        return new AuthResponse("Login successful", token);
-    }
-
-    @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest request) {
-        String token = service.loginWithPassword(request.getEmail(), request.getPassword());
-        return new AuthResponse("Login successful", token);
-    }
-}
+    public AuthRespo

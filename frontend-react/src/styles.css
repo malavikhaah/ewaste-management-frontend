@@ -400,3 +400,56 @@ input:disabled {
     font-size: 32px;
   }
 }
+/* ===== DASHBOARD LAYOUT ===== */
+
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e6f4ea, #f5fbf7);
+  font-family: Arial, sans-serif;
+}
+
+/* Top Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Brand Name */
+.nav-brand {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1f7a4c;
+}
+
+/* Right Buttons */
+.nav-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Center Content Card */
+.dashboard-content {
+  max-width: 900px;
+  margin: 80px auto;
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.dashboard-content h1 {
+  margin-bottom: 20px;
+  color: #1f7a4c;
+}
+
+.dashboard-content p {
+  line-height: 1.6;
+  margin-bottom: 12px;
+  color: #444;
+}
+

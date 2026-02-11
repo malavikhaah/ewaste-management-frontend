@@ -19,9 +19,43 @@ export default function Register() {
     setForm({ ...form, [event.target.name]: event.target.value });
   };
 
+  // PASSWORD VALIDATION
+  const validatePassword = (password) => {
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    return regex.test(password);
+  };
+
+  // PHONE VALIDATION (ADDED)
+  const validatePhone = (phone) => {
+    const regex = /^[0-9]{10}$/; // exactly 10 digits
+    return regex.test(phone);
+  };
+
   const onSubmit = async (event) => {
     event.preventDefault();
     setError("");
+
+    // PHONE VALIDATION (ADDED)
+    if (!validatePhone(form.phone)) {
+      setError(
+        "Phone number must contain exactly 10 digits."
+      );
+      return;
+    }
+
+    // PASSWORD CRITERIA VALIDATION
+    if (!validatePassword(form.password)) {
+      setError(
+        "Password must contain:\n" +
+          "• 1 Capital letter\n" +
+          "• 1 Small letter\n" +
+          "• 1 Number\n" +
+          "• 1 Symbol\n" +
+          "• Minimum 8 characters"
+      );
+      return;
+    }
 
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match.");
@@ -71,6 +105,7 @@ export default function Register() {
             required
           />
         </div>
+
         <div className="input-group">
           <label htmlFor="email">Email</label>
           <input
@@ -82,6 +117,7 @@ export default function Register() {
             required
           />
         </div>
+
         <div className="input-group">
           <label htmlFor="phone">Phone</label>
           <input
@@ -90,9 +126,11 @@ export default function Register() {
             type="tel"
             value={form.phone}
             onChange={onChange}
+            maxLength="10"   // ADDED
             required
           />
         </div>
+
         <div className="input-group">
           <label htmlFor="password">Password</label>
           <input
@@ -104,8 +142,11 @@ export default function Register() {
             required
           />
         </div>
+
         <div className="input-group">
-          <label htmlFor="confirmPassword">Confirm Password</label>
+          <label htmlFor="confirmPassword">
+            Confirm Password
+          </label>
           <input
             id="confirmPassword"
             name="confirmPassword"
@@ -115,8 +156,16 @@ export default function Register() {
             required
           />
         </div>
-        {error ? <div className="form-error">{error}</div> : null}
-        <button type="submit" className="btn primary" disabled={loading}>
+
+        {error ? (
+          <div className="form-error">{error}</div>
+        ) : null}
+
+        <button
+          type="submit"
+          className="btn primary"
+          disabled={loading}
+        >
           {loading ? "Sending OTP..." : "Register"}
         </button>
       </form>

@@ -1,10 +1,18 @@
 package com.ewaste.dto;
 
+import jakarta.validation.constraints.Pattern;
+
 public class RegisterRequest {
 
     private String name;
     private String email;
     private String password;
+
+    // ✅ PHONE VALIDATION ADDED
+    @Pattern(
+        regexp = "^[0-9]{10}$",
+        message = "Phone number must be exactly 10 digits"
+    )
     private String phone;
 
     public String getName() {
