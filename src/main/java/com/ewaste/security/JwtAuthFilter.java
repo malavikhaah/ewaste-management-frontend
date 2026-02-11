@@ -28,12 +28,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || authHeader.isBlank()) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = authHeader.substring(7);
+        String token;
+        if (authHeader.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            token = authHeader.substring(7).trim();
+        } else {
+            // Accept raw tokens to avoid rejecting valid JWTs sent without the Bearer prefix.
+            token = authHeader.trim();
+        }
+        if (token.isEmpty()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String username;
         try {
             username = jwtService.extractUsername(token);
