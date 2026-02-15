@@ -18,6 +18,8 @@ import java.util.Map;
 @RequestMapping("/profile")
 public class ProfileController {
 
+    private static final String PHONE_REGEX = "^[6-9]\\d{9}$";
+
     private final UserRepository userRepository;
 
     public ProfileController(UserRepository userRepository) {
@@ -48,7 +50,11 @@ public class ProfileController {
             user.setName(request.getName());
         }
         if (request.getPhone() != null && !request.getPhone().isBlank()) {
-            user.setPhone(request.getPhone());
+            String phone = request.getPhone().trim();
+            if (!phone.matches(PHONE_REGEX)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enter valid 10-digit phone number");
+            }
+            user.setPhone(phone);
         }
         userRepository.save(user);
         return Map.of("message", "Profile updated");
