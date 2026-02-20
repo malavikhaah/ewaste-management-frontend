@@ -27,6 +27,12 @@ export default function Dashboard() {
 
         {/* Navigation Buttons */}
         <div className="home-header-actions">
+          <Link to="/requests/submit" className="btn primary">
+            Submit Request
+          </Link>
+          <Link to="/requests/view" className="btn ghost">
+            View Requests
+          </Link>
 
           {/* ✅ Profile Link */}
           <Link to="/profile/me" className="btn ghost">
@@ -34,7 +40,7 @@ export default function Dashboard() {
           </Link>
 
           {/* ✅ Logout */}
-          <button className="btn primary" onClick={handleLogout}>
+          <button className="btn ghost" onClick={handleLogout}>
             Logout
           </button>
 

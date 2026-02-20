@@ -6,6 +6,8 @@ import Register from "./pages/Register.jsx";
 import OtpVerify from "./pages/OtpVerify.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Profile from "./pages/Profile.jsx";
+import Requests from "./pages/Requests.jsx";
+import RequestTracking from "./pages/RequestTracking.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -34,6 +36,38 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/requests"
+        element={
+          <ProtectedRoute>
+            <Navigate to="/requests/view" replace />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/requests/submit"
+        element={
+          <ProtectedRoute>
+            <Requests mode="submit" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/requests/view"
+        element={
+          <ProtectedRoute>
+            <Requests mode="view" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/requests/track/:id"
+        element={
+          <ProtectedRoute>
+            <RequestTracking />
           </ProtectedRoute>
         }
       />

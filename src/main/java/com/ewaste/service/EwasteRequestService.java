@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -77,6 +78,26 @@ public class EwasteRequestService {
         return toSummary(request);
     }
 
+    public RequestImageData getRequestImageById(String email, Long requestId) {
+        User user = getUserByEmail(email);
+        EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+        return new RequestImageData(request.getImageContentType(), request.getImageData());
+    }
+
+    public RequestImagePayload getRequestImagePayloadById(String email, Long requestId) {
+        RequestImageData imageData = getRequestImageById(email, requestId);
+        String base64 = Base64.getEncoder().encodeToString(imageData.data());
+        return new RequestImagePayload(imageData.contentType(), base64);
+    }
+
+    public void deleteRequest(String email, Long requestId) {
+        User user = getUserByEmail(email);
+        EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+        requestRepository.delete(request);
+    }
+
     private User getUserByEmail(String email) {
         User user = userRepository.findByEmail(email);
         if (user == null) {
@@ -138,5 +159,11 @@ public class EwasteRequestService {
                 request.getCreatedAt(),
                 request.getUpdatedAt()
         );
+    }
+
+    public record RequestImageData(String contentType, byte[] data) {
+    }
+
+    public record RequestImagePayload(String contentType, String base64Data) {
     }
 }
