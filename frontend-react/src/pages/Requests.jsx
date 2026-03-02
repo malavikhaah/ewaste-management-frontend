@@ -84,6 +84,15 @@ function MapClickSetter({ onPick }) {
 
 export default function Requests({ mode = "all" }) {
   const navigate = useNavigate();
+  const inputStyle = {
+  padding: "14px",
+  borderRadius: "12px",
+  border: "2px solid var(--border)",
+  background: "var(--surface)",
+  color: "var(--ink-1)",
+  fontSize: "15px",
+  width: "100%"
+  };
   const isSubmitOnly = mode === "submit";
 
   const [form, setForm] = useState({
@@ -592,199 +601,226 @@ export default function Requests({ mode = "all" }) {
 
         {/* SUBMIT MODE: Multi-step Wizard */}
         {isSubmitOnly && (
-           <section className="content-card" style={{ padding: '48px', maxWidth: '800px', margin: '0 auto', background: 'var(--surface)', borderRadius: '32px', boxShadow: 'var(--shadow)' }}>
-             <h2 style={{ fontSize: '32px', marginBottom: '40px', textAlign: 'center', fontFamily: 'Space Grotesk, sans-serif', color: 'var(--ink-1)', fontWeight: '800' }}>Submit Pickup Request</h2>
-             
-             <div className="request-stepper" style={{ display: 'flex', justifyContent: 'center', marginBottom: '60px' }}>
-                {FORM_STEPS.map((s, i) => (
-                  <div key={s.id} style={{ display: 'flex', alignItems: 'center' }}>
-                    <div style={{ textAlign: 'center', opacity: currentStep >= s.id ? 1 : 0.3 }}>
-                      <div className="request-step-badge" style={{ 
-                        margin: '0 auto 12px', 
-                        width: '50px',
-                        height: '50px',
-                        fontSize: '20px',
-                        fontWeight: '800',
-                        background: currentStep >= s.id ? 'var(--accent-1)' : 'var(--border)', 
-                        color: 'white',
-                        boxShadow: currentStep === s.id ? '0 0 0 6px rgba(14, 165, 164, 0.15)' : 'none'
-                      }}>{s.id}</div>
-                      <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--ink-1)' }}>{s.title}</div>
-                    </div>
-                    {i < FORM_STEPS.length - 1 && (
-                      <div style={{ width: '80px', height: '3px', background: currentStep > s.id ? 'var(--accent-1)' : 'var(--border)', margin: '0 15px', marginTop: '-25px' }} />
-                    )}
-                  </div>
-                ))}
-             </div>
-             
-             <div style={{ minHeight: '350px' }}>
-                {stepError && <div className="form-error" style={{ marginBottom: '32px', padding: '16px', borderRadius: '14px' }}>{stepError}</div>}
-                
-                {currentStep === 1 && (
-                  <div className="form-grid" style={{ display: 'grid', gap: '28px' }}>
-                    <div className="input-group">
-                      <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}><FaBox style={{ marginRight: '10px' }} /> DEVICE TYPE</label>
-                      <select name="deviceType" value={form.deviceType} onChange={handleChange} style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'var(--surface)', fontSize: '16px' }}>
-                        {DEVICE_TYPES.map(t => <option key={t} value={t} style={{ background: 'var(--surface)', color: 'var(--ink-1)' }}>{t}</option>)}
-                      </select>
-                    </div>
-                    {form.deviceType === "Other" && (
-                      <div className="input-group">
-                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>SPECIFY TYPE</label>
-                        <input name="customDeviceType" value={form.customDeviceType} onChange={handleChange} placeholder="What device is it?" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'var(--surface)', fontSize: '16px' }} />
-                      </div>
-                    )}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                      <div className="input-group">
-                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>BRAND</label>
-                        <input name="brand" value={form.brand} onChange={handleChange} placeholder="e.g. Dell" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'var(--surface)', fontSize: '16px' }} />
-                      </div>
-                      <div className="input-group">
-                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>MODEL</label>
-                        <input name="model" value={form.model} onChange={handleChange} placeholder="e.g. Inspiron 15" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'var(--surface)', fontSize: '16px' }} />
-                      </div>
-                    </div>
-                    <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-                      <button className="btn pin-btn-primary" style={{ padding: '18px 40px', fontSize: '16px' }} onClick={handleNextStep}>
-                        Continue to Pickup <FaArrowRight style={{ marginLeft: '10px' }} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {/* Step 2 & 3 would follow same pattern */}
-   {currentStep === 2 && (
-  <div style={{ display: "grid", gap: "28px" }}>
+  <section className="content-card"
+    style={{
+      padding: "48px",
+      maxWidth: "820px",
+      margin: "0 auto",
+      background: "var(--surface)",
+      borderRadius: "32px",
+      boxShadow: "var(--shadow)"
+    }}
+  >
 
-    <div className="input-group">
-      <label style={{ color: "var(--ink-1)", fontWeight: "700" }}>
-        PICKUP ADDRESS
-      </label>
-
-      {/* Map Button */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
-        <button
-          type="button"
-          className="btn"
-          onClick={handleOpenMapPicker}
-          style={{
-            flex: 1,
-            background: "rgba(14,165,164,0.1)",
-            color: "var(--accent-1)",
-            fontWeight: "700"
-          }}
-        >
-          📍 Select From Map
-        </button>
-
-        <button
-          type="button"
-          className="btn"
-          onClick={handleFetchLiveLocation}
-          style={{
-            flex: 1,
-            background: "rgba(148,163,184,0.1)",
-            color: "var(--ink-1)"
-          }}
-        >
-          📡 Use Current Location
-        </button>
-      </div>
-
-      {/* Manual Entry */}
-      <textarea
-        name="pickupAddress"
-        value={form.pickupAddress}
-        onChange={handleChange}
-        rows={3}
-        placeholder="Or enter manually..."
-        style={{
-          padding: "16px",
-          borderRadius: "14px",
-          border: "2px solid var(--border)",
-          background: "var(--surface)",
-          color: "var(--ink-1)"
-        }}
-      />
-    </div>
-
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <button
-        className="btn"
-        onClick={handlePreviousStep}
-      >
-        Back
-      </button>
-
-      <button
-        className="btn pin-btn-primary"
-        onClick={handleNextStep}
-      >
-        Continue
-      </button>
-    </div>
-  </div>
-)}
-{/* STEP 3 - Confirm */}
-{currentStep === 3 && (
-  <div style={{ display: "grid", gap: "28px" }}>
-    
-    <div style={{
-      padding: "24px",
-      borderRadius: "16px",
-      border: "2px solid var(--border)",
-      background: "var(--surface)"
+    <h2 style={{
+      fontSize: "32px",
+      marginBottom: "40px",
+      textAlign: "center",
+      color: "var(--ink-1)",
+      fontWeight: "800"
     }}>
-      <h3 style={{ color: "var(--ink-1)", marginBottom: "16px" }}>
-        Confirm Details
-      </h3>
-      <p><strong>Device:</strong> {form.deviceType}</p>
-      <p><strong>Brand:</strong> {form.brand}</p>
-      <p><strong>Model:</strong> {form.model}</p>
-      <p><strong>Pickup:</strong> {form.pickupAddress}</p>
-    </div>
+      Submit Pickup Request
+    </h2>
 
-    <div className="input-group">
-      <label style={{ color: "var(--ink-1)", fontWeight: "700" }}>
-        Upload Proof Image
-      </label>
-      <input
-        type="file"
-        onChange={(e) => setImageFile(e.target.files[0])}
-        style={{
-          padding: "12px",
-          borderRadius: "12px",
-          border: "2px solid var(--border)",
-          background: "var(--surface)",
-          color: "var(--ink-1)"
-        }}
-      />
-    </div>
+    {stepError && (
+      <div className="form-error" style={{ marginBottom: "24px" }}>
+        {stepError}
+      </div>
+    )}
 
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <button
-        className="btn"
-        onClick={handlePreviousStep}
-        style={{ padding: "16px 30px" }}
-      >
-        <FaArrowLeft style={{ marginRight: "8px" }} />
-        Back
-      </button>
+    {/* ================= STEP 1 ================= */}
+    {currentStep === 1 && (
+      <div style={{ display: "grid", gap: "24px" }}>
 
-      <button
-        className="btn pin-btn-primary"
-        onClick={handleSubmit}
-        disabled={loading}
-        style={{ padding: "16px 30px" }}
-      >
-        {loading ? "Submitting..." : "Submit Request"}
-      </button>
-    </div>
-  </div>
-)}
-             </div>
-           </section>
+        <div className="input-group">
+          <label style={{ fontWeight: "700", color: "var(--ink-1)" }}>
+            Device Type
+          </label>
+          <select
+            name="deviceType"
+            value={form.deviceType}
+            onChange={handleChange}
+            style={inputStyle}
+          >
+            {DEVICE_TYPES.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+
+        {form.deviceType === "Other" && (
+          <div className="input-group">
+            <label style={{ fontWeight: "700", color: "var(--ink-1)" }}>
+              Specify Device Type
+            </label>
+            <input
+              name="customDeviceType"
+              value={form.customDeviceType}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+          </div>
         )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          <div className="input-group">
+            <label style={{ fontWeight: "700", color: "var(--ink-1)" }}>Brand</label>
+            <input name="brand" value={form.brand} onChange={handleChange} style={inputStyle} />
+          </div>
+
+          <div className="input-group">
+            <label style={{ fontWeight: "700", color: "var(--ink-1)" }}>Model</label>
+            <input name="model" value={form.model} onChange={handleChange} style={inputStyle} />
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          <div className="input-group">
+            <label style={{ fontWeight: "700", color: "var(--ink-1)" }}>
+              Condition
+            </label>
+            <select
+              name="condition"
+              value={form.condition}
+              onChange={handleChange}
+              style={inputStyle}
+            >
+              {CONDITIONS.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label style={{ fontWeight: "700", color: "var(--ink-1)" }}>
+              Quantity
+            </label>
+            <input
+              type="number"
+              min="1"
+              name="quantity"
+              value={form.quantity}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+          </div>
+        </div>
+
+        <div style={{ textAlign: "right" }}>
+          <button className="btn pin-btn-primary" onClick={handleNextStep}>
+            Continue
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* ================= STEP 2 ================= */}
+    {currentStep === 2 && (
+      <div style={{ display: "grid", gap: "24px" }}>
+
+        <div className="input-group">
+          <label style={{ fontWeight: "700", color: "var(--ink-1)" }}>
+            Pickup Address
+          </label>
+
+          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+            <button type="button" className="btn" onClick={handleOpenMapPicker}>
+              Select From Map
+            </button>
+
+            <button type="button" className="btn" onClick={handleFetchLiveLocation}>
+              Use Current Location
+            </button>
+          </div>
+
+          <textarea
+            name="pickupAddress"
+            value={form.pickupAddress}
+            onChange={handleChange}
+            rows={3}
+            style={inputStyle}
+          />
+        </div>
+
+        <div className="input-group">
+          <label style={{ fontWeight: "700", color: "var(--ink-1)" }}>
+            Additional Remarks (Optional)
+          </label>
+          <textarea
+            name="additionalRemarks"
+            value={form.additionalRemarks}
+            onChange={handleChange}
+            rows={3}
+            style={inputStyle}
+          />
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <button className="btn" onClick={handlePreviousStep}>
+            Back
+          </button>
+
+          <button className="btn pin-btn-primary" onClick={handleNextStep}>
+            Continue
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* ================= STEP 3 ================= */}
+    {currentStep === 3 && (
+      <div style={{ display: "grid", gap: "24px" }}>
+
+        <div style={{
+          padding: "24px",
+          border: "1px solid var(--border)",
+          borderRadius: "16px",
+          background: "var(--surface)"
+        }}>
+          <h3 style={{ marginBottom: "16px", color: "var(--ink-1)" }}>
+            Confirm Details
+          </h3>
+
+          <p><strong>Device:</strong> {form.deviceType}</p>
+          <p><strong>Brand:</strong> {form.brand}</p>
+          <p><strong>Model:</strong> {form.model}</p>
+          <p><strong>Condition:</strong> {form.condition}</p>
+          <p><strong>Quantity:</strong> {form.quantity}</p>
+          <p><strong>Pickup:</strong> {form.pickupAddress}</p>
+          {form.additionalRemarks && (
+            <p><strong>Remarks:</strong> {form.additionalRemarks}</p>
+          )}
+        </div>
+
+        <div className="input-group">
+          <label style={{ fontWeight: "700", color: "var(--ink-1)" }}>
+            Upload Proof Image
+          </label>
+          <input
+            type="file"
+            onChange={(e) => setImageFile(e.target.files[0])}
+            style={inputStyle}
+          />
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <button className="btn" onClick={handlePreviousStep}>
+            Back
+          </button>
+
+          <button
+            className="btn pin-btn-primary"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? "Submitting..." : "Submit Request"}
+          </button>
+        </div>
+      </div>
+    )}
+
+  </section>
+)}
       </main>
 
       {/* Edit Request Modal */}
