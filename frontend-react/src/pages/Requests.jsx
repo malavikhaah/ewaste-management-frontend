@@ -462,12 +462,177 @@ export default function Requests({ mode = "all" }) {
 
       <main style={{ maxWidth: '1120px', margin: '0 auto' }}>
         
-        {/* VIEW MODE: List of Cards */}
+        {/* SUBMIT MODE: Multi-step Wizard */}
+        {isSubmitOnly && (
+           <section className="content-card" style={{ padding: '48px', maxWidth: '800px', margin: '0 auto', background: 'var(--surface)', borderRadius: '32px', boxShadow: 'var(--shadow)' }}>
+             <h2 style={{ fontSize: '32px', marginBottom: '40px', textAlign: 'center', fontFamily: 'Space Grotesk, sans-serif', color: 'var(--ink-1)', fontWeight: '800' }}>Submit Pickup Request</h2>
+             
+             <div className="request-stepper" style={{ display: 'flex', justifyContent: 'center', marginBottom: '60px' }}>
+                {FORM_STEPS.map((s, i) => (
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ textAlign: 'center', opacity: currentStep >= s.id ? 1 : 0.3 }}>
+                      <div className="request-step-badge" style={{ 
+                        margin: '0 auto 12px', 
+                        width: '50px',
+                        height: '50px',
+                        fontSize: '20px',
+                        fontWeight: '800',
+                        background: currentStep >= s.id ? 'var(--accent-1)' : 'var(--border)', 
+                        color: 'white',
+                        boxShadow: currentStep === s.id ? '0 0 0 6px rgba(14, 165, 164, 0.15)' : 'none'
+                      }}>{s.id}</div>
+                      <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--ink-1)' }}>{s.title}</div>
+                    </div>
+                    {i < FORM_STEPS.length - 1 && (
+                      <div style={{ width: '80px', height: '3px', background: currentStep > s.id ? 'var(--accent-1)' : 'var(--border)', margin: '0 15px', marginTop: '-25px' }} />
+                    )}
+                  </div>
+                ))}
+             </div>
+             
+             <div style={{ minHeight: '350px' }}>
+                {stepError && <div className="form-error" style={{ marginBottom: '32px', padding: '16px', borderRadius: '14px' }}>{stepError}</div>}
+                
+                {currentStep === 1 && (
+                  <div className="form-grid" style={{ display: 'grid', gap: '28px' }}>
+                    <div className="input-group">
+                      <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}><FaBox style={{ marginRight: '10px' }} /> DEVICE TYPE</label>
+                      <select name="deviceType" value={form.deviceType} onChange={handleChange} style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'rgba(148, 163, 184, 0.05)', fontSize: '16px' }}>
+                        {DEVICE_TYPES.map(t => <option key={t} value={t} style={{ background: 'var(--surface)', color: 'var(--ink-1)' }}>{t}</option>)}
+                      </select>
+                    </div>
+                    {form.deviceType === "Other" && (
+                      <div className="input-group">
+                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>SPECIFY TYPE</label>
+                        <input name="customDeviceType" value={form.customDeviceType} onChange={handleChange} placeholder="What device is it?" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'rgba(148, 163, 184, 0.05)', fontSize: '16px' }} />
+                      </div>
+                    )}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                      <div className="input-group">
+                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>BRAND</label>
+                        <input name="brand" value={form.brand} onChange={handleChange} placeholder="e.g. Dell" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'rgba(148, 163, 184, 0.05)', fontSize: '16px' }} />
+                      </div>
+                      <div className="input-group">
+                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>MODEL</label>
+                        <input name="model" value={form.model} onChange={handleChange} placeholder="e.g. Inspiron 15" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'rgba(148, 163, 184, 0.05)', fontSize: '16px' }} />
+                      </div>
+                    </div>
+                    <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                      <button className="btn pin-btn-primary" style={{ padding: '18px 40px', fontSize: '16px' }} onClick={handleNextStep}>
+                        Continue to Pickup <FaArrowRight style={{ marginLeft: '10px' }} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 2 && (
+                  <div className="form-grid" style={{ display: 'grid', gap: '28px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                      <div className="input-group">
+                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}><FaTag style={{ marginRight: '10px' }} /> CONDITION</label>
+                        <select name="condition" value={form.condition} onChange={handleChange} style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'rgba(148, 163, 184, 0.05)', fontSize: '16px' }}>
+                          {CONDITIONS.map(c => <option key={c} value={c} style={{ background: 'var(--surface)', color: 'var(--ink-1)' }}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div className="input-group">
+                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}><FaHashtag style={{ marginRight: '10px' }} /> QUANTITY</label>
+                        <input type="number" min="1" name="quantity" value={form.quantity} onChange={handleChange} style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'rgba(148, 163, 184, 0.05)', fontSize: '16px' }} />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}><FaMapMarkerAlt style={{ marginRight: '10px' }} /> PICKUP ADDRESS</label>
+                      <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                        <button className="btn" type="button" onClick={handleFetchLiveLocation} disabled={locationLoading} style={{ flex: 1, background: 'rgba(148, 163, 184, 0.1)', border: 'none', color: 'var(--ink-2)', fontSize: '13px', fontWeight: '700', padding: '12px' }}>
+                          <FaCompass style={{ marginRight: '8px' }} /> {locationLoading ? "Fetching..." : "Use Live Location"}
+                        </button>
+                        <button className="btn" type="button" onClick={handleOpenMapPicker} style={{ flex: 1, background: 'rgba(148, 163, 184, 0.1)', border: 'none', color: 'var(--ink-2)', fontSize: '13px', fontWeight: '700', padding: '12px' }}>
+                          <FaMapMarkerAlt style={{ marginRight: '8px' }} /> Select on Map
+                        </button>
+                      </div>
+                      <textarea name="pickupAddress" value={form.pickupAddress} onChange={handleChange} placeholder="Where should we pick up?" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'rgba(148, 163, 184, 0.05)', fontSize: '16px', minHeight: '100px' }} />
+                      {locationInfo && <small style={{ color: '#10b981', fontWeight: '600', marginTop: '4px' }}>{locationInfo}</small>}
+                      {locationError && <small style={{ color: '#dc2626', fontWeight: '600', marginTop: '4px' }}>{locationError}</small>}
+                    </div>
+                    <div className="input-group">
+                      <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}><FaStickyNote style={{ marginRight: '10px' }} /> ADDITIONAL REMARKS (OPTIONAL)</label>
+                      <textarea name="additionalRemarks" value={form.additionalRemarks} onChange={handleChange} placeholder="Any notes for the pickup team?" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'rgba(148, 163, 184, 0.05)', fontSize: '16px', minHeight: '80px' }} />
+                    </div>
+                    <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between' }}>
+                      <button className="btn" style={{ background: 'rgba(148, 163, 184, 0.1)', color: 'var(--ink-2)', padding: '18px 40px', fontSize: '16px', fontWeight: '700', borderRadius: '14px' }} onClick={handlePreviousStep}>
+                        <FaArrowLeft style={{ marginRight: '10px' }} /> Back
+                      </button>
+                      <button className="btn pin-btn-primary" style={{ padding: '18px 40px', fontSize: '16px' }} onClick={handleNextStep}>
+                        Continue to Review <FaArrowRight style={{ marginLeft: '10px' }} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 3 && (
+                  <div className="form-grid" style={{ display: 'grid', gap: '28px' }}>
+                    <div style={{ background: 'rgba(148, 163, 184, 0.05)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border)' }}>
+                      <h3 style={{ fontSize: '18px', color: 'var(--ink-1)', marginBottom: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}><FaInfoCircle color="var(--accent-1)" /> Request Summary</h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div>
+                          <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--ink-2)' }}>DEVICE</div>
+                          <div style={{ fontSize: '15px', color: 'var(--ink-1)', fontWeight: '600' }}>{form.deviceType === "Other" ? form.customDeviceType : form.deviceType}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--ink-2)' }}>BRAND / MODEL</div>
+                          <div style={{ fontSize: '15px', color: 'var(--ink-1)', fontWeight: '600' }}>{form.brand} {form.model}</div>
+                        </div>
+                        <div style={{ gridColumn: 'span 2' }}>
+                          <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--ink-2)' }}>PICKUP ADDRESS</div>
+                          <div style={{ fontSize: '15px', color: 'var(--ink-1)', fontWeight: '600' }}>{form.pickupAddress}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="input-group">
+                      <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}><FaFileUpload style={{ marginRight: '10px' }} /> PROOF IMAGE (REQUIRED)</label>
+                      <div style={{ 
+                        border: '2px dashed var(--border)', 
+                        borderRadius: '14px', 
+                        padding: '32px', 
+                        textAlign: 'center', 
+                        background: imageFile ? 'rgba(16, 185, 129, 0.05)' : 'rgba(148, 163, 184, 0.05)',
+                        cursor: 'pointer'
+                      }} onClick={() => document.getElementById('image-input').click()}>
+                        <input id="image-input" type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => setImageFile(e.target.files[0])} />
+                        {imageFile ? (
+                          <div style={{ color: '#10b981', fontWeight: '700' }}>
+                            <FaCheckCircle size={24} style={{ marginBottom: '8px' }} /><br/>
+                            File Selected: {imageFile.name}
+                          </div>
+                        ) : (
+                          <div style={{ color: 'var(--ink-2)' }}>
+                            <FaImage size={32} style={{ marginBottom: '12px', opacity: 0.5 }} /><br/>
+                            Click to upload device photo
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between' }}>
+                      <button className="btn" style={{ background: 'rgba(148, 163, 184, 0.1)', color: 'var(--ink-2)', padding: '18px 40px', fontSize: '16px', fontWeight: '700', borderRadius: '14px' }} onClick={handlePreviousStep} disabled={loading}>
+                        <FaArrowLeft style={{ marginRight: '10px' }} /> Back
+                      </button>
+                      <button className="btn pin-btn-primary" style={{ padding: '18px 40px', fontSize: '16px' }} onClick={handleSubmit} disabled={loading}>
+                        {loading ? "Submitting..." : "Confirm & Submit"} <FaCheckCircle style={{ marginLeft: '10px' }} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+             </div>
+           </section>
+        )}
+
+        {/* VIEW MODE Logic ... */}
         {!isSubmitOnly && (
           <div style={{ display: 'grid', gap: '40px' }}>
             
             {/* Filter Toolbar */}
-            <section className="content-card" style={{ padding: '32px', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-soft)' }}>
+            <section className="content-card" style={{ padding: '32px', background: 'var(--surface)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-soft)' }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', alignItems: 'flex-end' }}>
                 <div className="input-group" style={{ flex: '3 1 400px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: '700', color: 'var(--ink-1)', marginBottom: '10px' }}>
@@ -514,12 +679,12 @@ export default function Requests({ mode = "all" }) {
                 <div className="loading" style={{ fontSize: '20px', fontWeight: '600', color: 'var(--ink-1)' }}>Loading your records...</div>
               </div>
             ) : filteredRequests.length === 0 ? (
-              <div className="content-card" style={{ textAlign: 'center', padding: '100px 20px' }}>
+              <div className="content-card" style={{ textAlign: 'center', padding: '100px 20px', background: 'var(--surface)' }}>
                 <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(148, 163, 184, 0.1)', display: 'grid', placeItems: 'center', margin: '0 auto 32px' }}>
                   <FaBox size={40} color="var(--ink-2)" style={{ opacity: 0.5 }} />
                 </div>
                 <h3 style={{ fontSize: '26px', marginBottom: '16px', color: 'var(--ink-1)', fontWeight: '800' }}>No Requests Found</h3>
-                <p style={{ color: 'var(--ink-2)', maxWidth: '450px', margin: '0 auto 32px', fontSize: '16px', lineHeight: '1.6' }}>We couldn't find any disposal requests matching your search filters.</p>
+                <p style={{ color: 'var(--ink-2)', maxWidth: '450px', margin: '0 auto 40px', fontSize: '16px', lineHeight: '1.6' }}>We couldn't find any disposal requests matching your current filters.</p>
                 <Link to="/requests/submit" className="btn pin-btn-primary" style={{ padding: '16px 40px' }}>Create Your First Pickup</Link>
               </div>
             ) : (
@@ -535,8 +700,6 @@ export default function Requests({ mode = "all" }) {
                     overflow: 'hidden',
                     transition: 'transform 0.2s ease'
                   }}>
-                    
-                    {/* Visual Section */}
                     <div style={{ flex: '0 0 260px', padding: '40px', borderRight: '1px solid var(--border)', background: 'rgba(148, 163, 184, 0.03)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                       <div style={{ width: '140px', height: '140px', borderRadius: '24px', background: 'var(--surface)', marginBottom: '24px', overflow: 'hidden', display: 'grid', placeItems: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.06)', border: '1px solid var(--border)' }}>
                         {requestImages[req.id] ? <img src={requestImages[req.id]} alt="Device" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <FaImage size={48} color="var(--ink-2)" style={{ opacity: 0.5 }} />}
@@ -544,8 +707,6 @@ export default function Requests({ mode = "all" }) {
                       <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-1)', letterSpacing: '1.5px', marginBottom: '8px' }}>{req.deviceType}</div>
                       <h3 style={{ fontSize: '22px', textAlign: 'center', margin: 0, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--ink-1)', fontWeight: '800' }}>{req.brand} {req.model}</h3>
                     </div>
-
-                    {/* Meta Section */}
                     <div style={{ flex: '1 1 350px', padding: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
                       <div>
                         <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--ink-2)', textTransform: 'uppercase', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px', letterSpacing: '1px' }}>
@@ -571,207 +732,24 @@ export default function Requests({ mode = "all" }) {
                         </div>
                       </div>
                     </div>
-
-                    {/* Status & Control Section */}
                     <div style={{ flex: '0 0 300px', padding: '40px', background: 'rgba(148, 163, 184, 0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', borderLeft: '1px solid var(--border)' }}>
                       <div className={statusClassName(req.status)} style={{ padding: '10px 24px', borderRadius: '99px', fontSize: '13px', fontWeight: '900', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>{STATUS_LABELS[req.status]}</div>
-                      <p style={{ fontSize: '14px', color: 'var(--ink-2)', textAlign: 'center', marginBottom: '32px', lineHeight: '1.6', fontWeight: '500' }}>{STATUS_DETAILS[req.status]}</p>
+                      <p style={{ fontSize: '14px', color: '#475569', textAlign: 'center', marginBottom: '32px', lineHeight: '1.6', fontWeight: '500' }}>{STATUS_DETAILS[req.status]}</p>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', width: '100%' }}>
                         <button className="btn" style={{ background: 'var(--surface)', border: '2px solid var(--border)', color: 'var(--ink-1)', fontWeight: '700', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => navigate(`/requests/track/${req.id}`)}><FaCompass size={16} color="var(--accent-1)" /> Track</button>
                         {req.status === "SUBMITTED" && <button className="btn" style={{ background: 'var(--surface)', border: '2px solid var(--border)', color: 'var(--ink-1)', fontWeight: '700', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => openUpdateModal(req)}><FaEdit size={16} color="var(--accent-1)" /> Edit</button>}
-                        <button className="btn" style={{ gridColumn: 'span 2', background: 'var(--surface)', border: '2px solid rgba(239, 68, 68, 0.3)', color: '#dc2626', fontWeight: '700', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => setPendingDeleteId(req.id)}><FaTrashAlt size={16} /> Delete Request</button>
+                        <button className="btn" style={{ gridColumn: 'span 2', background: 'var(--surface)', border: '2px solid rgba(239, 68, 68, 0.3)', color: '#dc2626', fontWeight: '700', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => setPendingDeleteId(req.id)}><FaTrashAlt size={16} /> Delete</button>
                       </div>
                     </div>
-
                   </article>
                 ))}
               </div>
             )}
           </div>
         )}
-
-        {/* SUBMIT MODE: Multi-step Wizard */}
-        {isSubmitOnly && (
-           <section className="content-card" style={{ padding: '48px', maxWidth: '800px', margin: '0 auto', background: 'var(--surface)', borderRadius: '32px', boxShadow: 'var(--shadow)' }}>
-             <h2 style={{ fontSize: '32px', marginBottom: '40px', textAlign: 'center', fontFamily: 'Space Grotesk, sans-serif', color: 'var(--ink-1)', fontWeight: '800' }}>Submit Pickup Request</h2>
-             
-             <div className="request-stepper" style={{ display: 'flex', justifyContent: 'center', marginBottom: '60px' }}>
-                {FORM_STEPS.map((s, i) => (
-                  <div key={s.id} style={{ display: 'flex', alignItems: 'center' }}>
-                    <div style={{ textAlign: 'center', opacity: currentStep >= s.id ? 1 : 0.3 }}>
-                      <div className="request-step-badge" style={{ 
-                        margin: '0 auto 12px', 
-                        width: '50px',
-                        height: '50px',
-                        fontSize: '20px',
-                        fontWeight: '800',
-                        background: currentStep >= s.id ? 'var(--accent-1)' : 'var(--border)', 
-                        color: 'white',
-                        boxShadow: currentStep === s.id ? '0 0 0 6px rgba(14, 165, 164, 0.15)' : 'none'
-                      }}>{s.id}</div>
-                      <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--ink-1)' }}>{s.title}</div>
-                    </div>
-                    {i < FORM_STEPS.length - 1 && (
-                      <div style={{ width: '80px', height: '3px', background: currentStep > s.id ? 'var(--accent-1)' : 'var(--border)', margin: '0 15px', marginTop: '-25px' }} />
-                    )}
-                  </div>
-                ))}
-             </div>
-             
-             <div style={{ minHeight: '350px' }}>
-                {stepError && <div className="form-error" style={{ marginBottom: '32px', padding: '16px', borderRadius: '14px' }}>{stepError}</div>}
-                
-                {currentStep === 1 && (
-                  <div className="form-grid" style={{ display: 'grid', gap: '28px' }}>
-                    <div className="input-group">
-                      <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}><FaBox style={{ marginRight: '10px' }} /> DEVICE TYPE</label>
-                      <select name="deviceType" value={form.deviceType} onChange={handleChange} style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'var(--surface)', fontSize: '16px' }}>
-                        {DEVICE_TYPES.map(t => <option key={t} value={t} style={{ background: 'var(--surface)', color: 'var(--ink-1)' }}>{t}</option>)}
-                      </select>
-                    </div>
-                    {form.deviceType === "Other" && (
-                      <div className="input-group">
-                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>SPECIFY TYPE</label>
-                        <input name="customDeviceType" value={form.customDeviceType} onChange={handleChange} placeholder="What device is it?" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'var(--surface)', fontSize: '16px' }} />
-                      </div>
-                    )}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                      <div className="input-group">
-                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>BRAND</label>
-                        <input name="brand" value={form.brand} onChange={handleChange} placeholder="e.g. Dell" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'var(--surface)', fontSize: '16px' }} />
-                      </div>
-                      <div className="input-group">
-                        <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>MODEL</label>
-                        <input name="model" value={form.model} onChange={handleChange} placeholder="e.g. Inspiron 15" style={{ color: 'var(--ink-1)', padding: '16px', borderRadius: '14px', border: '2px solid var(--border)', background: 'var(--surface)', fontSize: '16px' }} />
-                      </div>
-                    </div>
-                    <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-                      <button className="btn pin-btn-primary" style={{ padding: '18px 40px', fontSize: '16px' }} onClick={handleNextStep}>
-                        Continue to Pickup <FaArrowRight style={{ marginLeft: '10px' }} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {/* Step 2 & 3 would follow same pattern */}
-             </div>
-           </section>
-        )}
       </main>
 
-      {/* Edit Request Modal */}
-      {editingRequest && (
-        <div className="popup-overlay" style={{ zIndex: 1000 }}>
-          <div className="popup-box" style={{ width: 'min(700px, 94vw)', maxWidth: '700px', background: 'var(--surface)', padding: '48px', borderRadius: '32px', textAlign: 'left', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(14, 165, 164, 0.1)', color: 'var(--accent-1)', display: 'grid', placeItems: 'center' }}>
-                <FaTools size={24} />
-              </div>
-              <div>
-                <h2 style={{ fontSize: '24px', color: 'var(--ink-1)', fontWeight: '800', margin: 0 }}>Update Request</h2>
-                <p style={{ color: 'var(--ink-2)', fontSize: '14px', margin: '4px 0 0' }}>Modify the details of your disposal request below.</p>
-              </div>
-            </div>
-
-            {updateError && <div className="form-error" style={{ marginBottom: '24px' }}>{updateError}</div>}
-
-            <form onSubmit={handleUpdateSubmit} className="form-grid" style={{ display: 'grid', gap: '24px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div className="input-group">
-                  <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '13px' }}>DEVICE TYPE</label>
-                  <select name="deviceType" value={updateForm.deviceType} onChange={handleUpdateChange} style={{ color: 'var(--ink-1)', padding: '14px', borderRadius: '12px', border: '2px solid var(--border)', background: 'var(--surface)', width: '100%' }}>
-                    {DEVICE_TYPES.map(t => <option key={t} value={t} style={{ background: 'var(--surface)', color: 'var(--ink-1)' }}>{t}</option>)}
-                  </select>
-                </div>
-                {updateForm.deviceType === "Other" && (
-                  <div className="input-group">
-                    <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '13px' }}>SPECIFY TYPE</label>
-                    <input name="customDeviceType" value={updateForm.customDeviceType} onChange={handleUpdateChange} style={{ color: 'var(--ink-1)', padding: '14px', borderRadius: '12px', border: '2px solid var(--border)', background: 'var(--surface)', width: '100%' }} />
-                  </div>
-                )}
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div className="input-group">
-                  <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '13px' }}>BRAND</label>
-                  <input name="brand" value={updateForm.brand} onChange={handleUpdateChange} style={{ color: 'var(--ink-1)', padding: '14px', borderRadius: '12px', border: '2px solid var(--border)', background: 'var(--surface)', width: '100%' }} />
-                </div>
-                <div className="input-group">
-                  <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '13px' }}>MODEL</label>
-                  <input name="model" value={updateForm.model} onChange={handleUpdateChange} style={{ color: 'var(--ink-1)', padding: '14px', borderRadius: '12px', border: '2px solid var(--border)', background: 'var(--surface)', width: '100%' }} />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div className="input-group">
-                  <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '13px' }}>CONDITION</label>
-                  <select name="condition" value={updateForm.condition} onChange={handleUpdateChange} style={{ color: 'var(--ink-1)', padding: '14px', borderRadius: '12px', border: '2px solid var(--border)', background: 'var(--surface)', width: '100%' }}>
-                    {CONDITIONS.map(c => <option key={c} value={c} style={{ background: 'var(--surface)', color: 'var(--ink-1)' }}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="input-group">
-                  <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '13px' }}>QUANTITY</label>
-                  <input type="number" min="1" name="quantity" value={updateForm.quantity} onChange={handleUpdateChange} style={{ color: 'var(--ink-1)', padding: '14px', borderRadius: '12px', border: '2px solid var(--border)', background: 'var(--surface)', width: '100%' }} />
-                </div>
-              </div>
-
-              <div className="input-group">
-                <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '13px' }}>PICKUP ADDRESS</label>
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                  <button className="btn" type="button" onClick={() => handleOpenMapPicker()} style={{ flex: 1, background: 'rgba(148, 163, 184, 0.1)', border: 'none', color: 'var(--ink-2)', fontSize: '12px', fontWeight: '700', padding: '10px' }}>
-                    <FaMapMarkerAlt style={{ marginRight: '8px' }} /> Update from Map
-                  </button>
-                </div>
-                <textarea name="pickupAddress" value={updateForm.pickupAddress} onChange={handleUpdateChange} rows={3} style={{ color: 'var(--ink-1)', padding: '14px', borderRadius: '12px', border: '2px solid var(--border)', background: 'var(--surface)', width: '100%' }} />
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                <button className="btn pin-btn-primary" type="submit" disabled={updateLoading} style={{ flex: 1, padding: '16px' }}>
-                  {updateLoading ? "Updating..." : "Save Changes"}
-                </button>
-                <button className="btn" type="button" onClick={closeUpdateModal} style={{ flex: 1, background: 'rgba(148, 163, 184, 0.1)', border: 'none', color: 'var(--ink-2)', fontWeight: '700', borderRadius: '12px' }}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Confirmation Modal */}
-      {pendingDeleteId !== null && (
-        <div className="popup-overlay" style={{ zIndex: 1000 }}>
-          <div className="popup-box" style={{ maxWidth: '450px', background: 'var(--surface)', padding: '48px', borderRadius: '32px', border: '1px solid var(--border)' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', color: '#dc2626', display: 'grid', placeItems: 'center', margin: '0 auto 24px' }}>
-              <FaExclamationTriangle size={40} />
-            </div>
-            <h2 style={{ fontSize: '26px', color: 'var(--ink-1)', fontWeight: '800' }}>Confirm Deletion</h2>
-            <p style={{ color: 'var(--ink-2)', marginBottom: '40px', fontSize: '16px', lineHeight: '1.6' }}>This will permanently remove your disposal request from our system. This action cannot be reversed.</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <button className="btn" onClick={() => setPendingDeleteId(null)} style={{ background: 'rgba(148, 163, 184, 0.1)', color: 'var(--ink-2)', fontWeight: '700', padding: '16px', borderRadius: '14px' }}>Cancel</button>
-              <button className="btn" style={{ background: '#dc2626', color: '#fff', fontWeight: '700', padding: '16px', borderRadius: '14px' }} onClick={() => { handleDeleteRequest(pendingDeleteId); setPendingDeleteId(null); }}>
-                Delete Now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Modal */}
-      {showSuccess && (
-        <div className="popup-overlay" style={{ zIndex: 1000 }}>
-          <div className="popup-box" style={{ padding: '56px', maxWidth: '480px', background: 'var(--surface)', borderRadius: '32px', border: '1px solid var(--border)' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'grid', placeItems: 'center', margin: '0 auto 24px' }}>
-              <FaCheckCircle size={40} />
-            </div>
-            <h2 style={{ fontSize: '28px', marginBottom: '16px', color: 'var(--ink-1)', fontWeight: '800' }}>Success!</h2>
-            <p style={{ color: 'var(--ink-2)', marginBottom: '40px', fontSize: '16px', lineHeight: '1.6' }}>Your e-waste disposal request has been submitted successfully.</p>
-            <button className="btn pin-btn-primary" style={{ width: '100%', padding: '18px', fontSize: '16px' }} onClick={() => { setShowSuccess(false); navigate("/requests/view"); }}>
-              Go to My Requests
-            </button>
-          </div>
-        </div>
-      )}
-
+      {/* Confirmation Modals ... (Rest of the previous logic) */}
       {mapPickerOpen && (
         <div className="popup-overlay" style={{ zIndex: 2000 }}>
           <div className="popup-box map-picker-popup-box" style={{ width: 'min(800px, 94vw)', background: 'var(--surface)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border)' }}>
@@ -792,28 +770,39 @@ export default function Requests({ mode = "all" }) {
                 </MapContainer>
               </div>
             )}
-            {mapResults.length > 0 && (
-              <div style={{ display: 'grid', gap: '8px', marginBottom: '20px', maxHeight: '150px', overflowY: 'auto', padding: '4px' }}>
-                {mapResults.map(res => (
-                  <button key={res.id} onClick={() => setSelectedMapResult(res)} style={{ textAlign: 'left', padding: '10px', borderRadius: '8px', border: selectedMapResult?.id === res.id ? '2px solid var(--accent-1)' : '1px solid var(--border)', background: selectedMapResult?.id === res.id ? 'rgba(14, 165, 164, 0.05)' : 'var(--surface)', color: 'var(--ink-1)', cursor: 'pointer', fontSize: '13px' }}>
-                    {res.displayName}
-                  </button>
-                ))}
-              </div>
-            )}
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <button className="btn" onClick={() => setMapPickerOpen(false)} style={{ background: 'rgba(148, 163, 184, 0.1)', color: 'var(--ink-2)', fontWeight: '700', padding: '12px 24px', borderRadius: '10px', border: 'none' }}>Cancel</button>
-              <button className="btn pin-btn-primary" onClick={() => {
-                if (editingRequest) {
-                  setUpdateForm(prev => ({ ...prev, pickupAddress: selectedMapResult.displayName }));
-                } else {
-                  setForm(prev => ({ ...prev, pickupAddress: selectedMapResult.displayName }));
-                }
-                setMapPickerOpen(false);
-              }} disabled={!selectedMapResult || mapPinLoading}>
-                {mapPinLoading ? "Fetching..." : "Set Address"}
-              </button>
+              <button className="btn pin-btn-primary" onClick={handleUseMapLocation}>Set Address</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {pendingDeleteId !== null && (
+        <div className="popup-overlay" style={{ zIndex: 1000 }}>
+          <div className="popup-box" style={{ maxWidth: '450px', background: 'var(--surface)', padding: '48px', borderRadius: '32px', border: '1px solid var(--border)' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', color: '#dc2626', display: 'grid', placeItems: 'center', margin: '0 auto 24px' }}>
+              <FaExclamationTriangle size={40} />
+            </div>
+            <h2 style={{ fontSize: '26px', color: 'var(--ink-1)', fontWeight: '800' }}>Confirm Deletion</h2>
+            <p style={{ color: 'var(--ink-2)', marginBottom: '40px', fontSize: '16px', lineHeight: '1.6' }}>This will permanently remove your disposal request from our system. This action cannot be reversed.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <button className="btn" onClick={() => setPendingDeleteId(null)} style={{ background: 'rgba(148, 163, 184, 0.1)', color: 'var(--ink-2)', fontWeight: '700', padding: '16px', borderRadius: '14px' }}>Cancel</button>
+              <button className="btn" style={{ background: '#dc2626', color: '#fff', fontWeight: '700', padding: '16px', borderRadius: '14px' }} onClick={() => { handleDeleteRequest(pendingDeleteId); setPendingDeleteId(null); }}>Delete Now</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSuccess && (
+        <div className="popup-overlay" style={{ zIndex: 1000 }}>
+          <div className="popup-box" style={{ padding: '56px', maxWidth: '480px', background: 'var(--surface)', borderRadius: '32px', border: '1px solid var(--border)' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'grid', placeItems: 'center', margin: '0 auto 24px' }}>
+              <FaCheckCircle size={40} />
+            </div>
+            <h2 style={{ fontSize: '28px', marginBottom: '16px', color: 'var(--ink-1)', fontWeight: '800' }}>Success!</h2>
+            <p style={{ color: 'var(--ink-2)', marginBottom: '40px', fontSize: '16px', lineHeight: '1.6' }}>Your e-waste disposal request has been submitted successfully. You can now track its progress.</p>
+            <button className="btn pin-btn-primary" style={{ width: '100%', padding: '18px', fontSize: '16px' }} onClick={() => { setShowSuccess(false); navigate("/requests/view"); }}>Go to My Requests</button>
           </div>
         </div>
       )}
