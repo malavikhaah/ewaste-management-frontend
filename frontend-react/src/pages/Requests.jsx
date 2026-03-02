@@ -653,6 +653,135 @@ export default function Requests({ mode = "all" }) {
                   </div>
                 )}
                 {/* Step 2 & 3 would follow same pattern */}
+   {currentStep === 2 && (
+  <div style={{ display: "grid", gap: "28px" }}>
+
+    <div className="input-group">
+      <label style={{ color: "var(--ink-1)", fontWeight: "700" }}>
+        PICKUP ADDRESS
+      </label>
+
+      {/* Map Button */}
+      <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
+        <button
+          type="button"
+          className="btn"
+          onClick={handleOpenMapPicker}
+          style={{
+            flex: 1,
+            background: "rgba(14,165,164,0.1)",
+            color: "var(--accent-1)",
+            fontWeight: "700"
+          }}
+        >
+          📍 Select From Map
+        </button>
+
+        <button
+          type="button"
+          className="btn"
+          onClick={handleFetchLiveLocation}
+          style={{
+            flex: 1,
+            background: "rgba(148,163,184,0.1)",
+            color: "var(--ink-1)"
+          }}
+        >
+          📡 Use Current Location
+        </button>
+      </div>
+
+      {/* Manual Entry */}
+      <textarea
+        name="pickupAddress"
+        value={form.pickupAddress}
+        onChange={handleChange}
+        rows={3}
+        placeholder="Or enter manually..."
+        style={{
+          padding: "16px",
+          borderRadius: "14px",
+          border: "2px solid var(--border)",
+          background: "var(--surface)",
+          color: "var(--ink-1)"
+        }}
+      />
+    </div>
+
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <button
+        className="btn"
+        onClick={handlePreviousStep}
+      >
+        Back
+      </button>
+
+      <button
+        className="btn pin-btn-primary"
+        onClick={handleNextStep}
+      >
+        Continue
+      </button>
+    </div>
+  </div>
+)}
+{/* STEP 3 - Confirm */}
+{currentStep === 3 && (
+  <div style={{ display: "grid", gap: "28px" }}>
+    
+    <div style={{
+      padding: "24px",
+      borderRadius: "16px",
+      border: "2px solid var(--border)",
+      background: "var(--surface)"
+    }}>
+      <h3 style={{ color: "var(--ink-1)", marginBottom: "16px" }}>
+        Confirm Details
+      </h3>
+      <p><strong>Device:</strong> {form.deviceType}</p>
+      <p><strong>Brand:</strong> {form.brand}</p>
+      <p><strong>Model:</strong> {form.model}</p>
+      <p><strong>Pickup:</strong> {form.pickupAddress}</p>
+    </div>
+
+    <div className="input-group">
+      <label style={{ color: "var(--ink-1)", fontWeight: "700" }}>
+        Upload Proof Image
+      </label>
+      <input
+        type="file"
+        onChange={(e) => setImageFile(e.target.files[0])}
+        style={{
+          padding: "12px",
+          borderRadius: "12px",
+          border: "2px solid var(--border)",
+          background: "var(--surface)",
+          color: "var(--ink-1)"
+        }}
+      />
+    </div>
+
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <button
+        className="btn"
+        onClick={handlePreviousStep}
+        style={{ padding: "16px 30px" }}
+      >
+        <FaArrowLeft style={{ marginRight: "8px" }} />
+        Back
+      </button>
+
+      <button
+        className="btn pin-btn-primary"
+        onClick={handleSubmit}
+        disabled={loading}
+        style={{ padding: "16px 30px" }}
+      >
+        {loading ? "Submitting..." : "Submit Request"}
+      </button>
+    </div>
+  </div>
+)}
              </div>
            </section>
         )}
