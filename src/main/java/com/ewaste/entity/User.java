@@ -1,10 +1,23 @@
 package com.ewaste.entity;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
-import lombok.*;
-import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @Entity
 @Table(name = "users")
 @Data
@@ -26,6 +39,13 @@ public class User {
 
     private String phone;
 
+    // ==========================
+    // Role for JWT + Spring Security
+    // ==========================
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.ROLE_USER; // default role
+
     @Column(name = "is_verified")
     private Boolean isVerified = false;
 
@@ -36,4 +56,12 @@ public class User {
     @JsonIgnore
     @Column(name = "otp_expires_at")
     private LocalDateTime otpExpiresAt;
+
+    // ==========================
+    // Role enum
+    // ==========================
+    public enum Role {
+        ROLE_USER,
+        ROLE_ADMIN
+    }
 }

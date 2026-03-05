@@ -1,15 +1,14 @@
 package com.ewaste.security;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import java.util.Date;
+import java.util.function.Function;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 @Service
 public class JwtService {
@@ -20,41 +19,43 @@ public class JwtService {
     @Value("${app.jwt.expiration-minutes:60}")
     private long expirationMinutes;
 
-    public String generateToken(String subject) {
-        Instant now = Instant.now();
+    public String generateToken(String subject, String role) {
+
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expirationMinutes * 60 * 1000);
+
         return Jwts.builder()
-                .subject(subject)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plus(Duration.ofMinutes(expirationMinutes))))
-                .signWith(getSigningKey())
+                .setSubject(subject)
+                .claim("role", role)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(SignatureAlgorithm.HS384, jwtSecret)
                 .compact();
     }
 
     public String extractUsername(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
+        Claims claims = extractAllClaims(token);
+        return resolver.apply(claims);
     }
 
     public boolean isTokenValid(String token, String username) {
-        return username.equals(extractUsername(token)) && !isTokenExpired(token);
+        return extractUsername(token).equals(username)
+                && !isTokenExpired(token);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     private boolean isTokenExpired(String token) {
-        Date expiration = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getExpiration();
-        return expiration.before(new Date());
-    }
-
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return extractClaim(token, Claims::getExpiration)
+                .before(new Date());
     }
 }

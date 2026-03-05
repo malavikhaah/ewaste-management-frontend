@@ -1,9 +1,9 @@
 package com.ewaste.entity;
 
 public enum RequestStatus {
-    SUBMITTED,
-    PICKUP_SCHEDULED,
-    PICKED_UP,
-    RECYCLED,
-    REJECTED
+    PENDING,
+    ACCEPTED,
+    REJECTED,
+    SCHEDULED,
+    PICKED_UP
 }

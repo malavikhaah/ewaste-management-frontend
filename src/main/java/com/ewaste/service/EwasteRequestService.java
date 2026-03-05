@@ -1,5 +1,14 @@
 package com.ewaste.service;
 
+import java.io.IOException;
+import java.util.Base64;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.ewaste.dto.EwasteRequestSummary;
 import com.ewaste.entity.EwasteRequest;
 import com.ewaste.entity.RequestCondition;
@@ -7,14 +16,6 @@ import com.ewaste.entity.RequestStatus;
 import com.ewaste.entity.User;
 import com.ewaste.repository.EwasteRequestRepository;
 import com.ewaste.repository.UserRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.io.IOException;
-import java.util.Base64;
-import java.util.List;
 
 @Service
 public class EwasteRequestService {
@@ -95,9 +96,10 @@ public class EwasteRequestService {
         EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
 
-        if (request.getStatus() != RequestStatus.SUBMITTED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only submitted requests can be updated");
-        }
+        if (request.getStatus() != RequestStatus.PENDING) {
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Only pending requests can be updated");
+}
 
         validateUpdateInput(deviceType, brand, model, condition, quantity, pickupAddress, image);
 

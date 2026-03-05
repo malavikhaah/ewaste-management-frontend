@@ -1,5 +1,9 @@
 package com.ewaste.entity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,8 +21,6 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ewaste_requests")
@@ -66,7 +68,13 @@ public class EwasteRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RequestStatus status = RequestStatus.SUBMITTED;
+    private RequestStatus status = RequestStatus.PENDING;
+
+    @Column(name = "pickup_date")
+    private LocalDate pickupDate;
+
+    @Column(name = "pickup_time")
+    private LocalTime pickupTime;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -80,7 +88,7 @@ public class EwasteRequest {
         createdAt = now;
         updatedAt = now;
         if (status == null) {
-            status = RequestStatus.SUBMITTED;
+            status = RequestStatus.PENDING;
         }
     }
 
