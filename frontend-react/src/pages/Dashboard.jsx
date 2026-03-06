@@ -1,7 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { apiRequest } from "../api.js";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [role, setRole] = useState("USER");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    apiRequest("/profile/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((data) => setRole(data.role || "USER"))
+      .catch(() => setRole("USER"));
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -29,6 +41,11 @@ export default function Dashboard() {
             <Link to="/profile/me" className="btn pin-btn-ghost">
               Profile
             </Link>
+            {role === "ADMIN" && (
+              <Link to="/admin" className="btn pin-btn-primary">
+                Admin Panel
+              </Link>
+            )}
             <button className="btn pin-btn-ghost" onClick={handleLogout}>
               Logout
             </button>

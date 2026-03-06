@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Service
 public class EmailService {
 
@@ -112,6 +115,73 @@ public class EmailService {
 
             mailSender.send(message);
 
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendPickupScheduleEmail(
+            String toEmail,
+            Long requestId,
+            LocalDate pickupDate,
+            LocalTime pickupTime,
+            String personnelName
+    ) {
+        if (!mailEnabled) {
+            System.out.printf("DEV MAIL pickup schedule -> %s | request=%d | %s %s | personnel=%s%n",
+                    toEmail, requestId, pickupDate, pickupTime, personnelName);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(toEmail);
+            helper.setSubject("E-Waste Pickup Scheduled");
+
+            String body = """
+                <html>
+                <body style="font-family: Arial, sans-serif;">
+                  <h3>Your e-waste pickup has been scheduled</h3>
+                  <p>Request ID: <b>%d</b></p>
+                  <p>Pickup Date: <b>%s</b></p>
+                  <p>Pickup Time: <b>%s</b></p>
+                  <p>Pickup Personnel: <b>%s</b></p>
+                </body>
+                </html>
+                """.formatted(requestId, pickupDate, pickupTime, personnelName == null ? "TBD" : personnelName);
+
+            helper.setText(body, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendStatusUpdateEmail(String toEmail, Long requestId, String status) {
+        if (!mailEnabled) {
+            System.out.printf("DEV MAIL status update -> %s | request=%d | status=%s%n", toEmail, requestId, status);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(toEmail);
+            helper.setSubject("E-Waste Request Status Updated");
+
+            String body = """
+                <html>
+                <body style="font-family: Arial, sans-serif;">
+                  <h3>Your request status was updated</h3>
+                  <p>Request ID: <b>%d</b></p>
+                  <p>New Status: <b>%s</b></p>
+                </body>
+                </html>
+                """.formatted(requestId, status);
+
+            helper.setText(body, true);
+            mailSender.send(message);
         } catch (MessagingException e) {
             e.printStackTrace();
         }

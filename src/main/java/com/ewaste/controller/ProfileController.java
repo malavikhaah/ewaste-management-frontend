@@ -35,7 +35,8 @@ public class ProfileController {
         return Map.of(
                 "name", user.getName(),
                 "email", user.getEmail(),
-                "phone", user.getPhone()
+                "phone", user.getPhone(),
+                "role", user.getRole() == null ? "USER" : user.getRole().name()
         );
     }
 

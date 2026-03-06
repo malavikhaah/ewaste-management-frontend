@@ -39,15 +39,12 @@ public class User {
 
     private String phone;
 
-    // ==========================
-    // Role for JWT + Spring Security
-    // ==========================
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role = Role.ROLE_USER; // default role
-
     @Column(name = "is_verified")
     private Boolean isVerified = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private UserRole role = UserRole.USER;
 
     @JsonIgnore
     @Column(name = "otp")
@@ -56,12 +53,4 @@ public class User {
     @JsonIgnore
     @Column(name = "otp_expires_at")
     private LocalDateTime otpExpiresAt;
-
-    // ==========================
-    // Role enum
-    // ==========================
-    public enum Role {
-        ROLE_USER,
-        ROLE_ADMIN
-    }
 }

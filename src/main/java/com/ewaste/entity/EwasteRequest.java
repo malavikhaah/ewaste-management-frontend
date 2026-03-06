@@ -21,7 +21,6 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Entity
 @Table(name = "ewaste_requests")
 @Data
@@ -75,6 +74,9 @@ public class EwasteRequest {
 
     @Column(name = "pickup_time")
     private LocalTime pickupTime;
+
+    @Column(length = 150)
+    private String pickupPersonnelName;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -7,6 +7,7 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import OtpVerify from "./pages/OtpVerify.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 import Profile from "./pages/Profile.jsx";
 import Requests from "./pages/Requests.jsx";
 import RequestTracking from "./pages/RequestTracking.jsx";
@@ -35,6 +36,12 @@ export default function App() {
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminDashboard />
           </ProtectedRoute>
         }/>
 

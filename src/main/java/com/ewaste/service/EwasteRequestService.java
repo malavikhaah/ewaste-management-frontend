@@ -1,14 +1,5 @@
 package com.ewaste.service;
 
-import java.io.IOException;
-import java.util.Base64;
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.ewaste.dto.EwasteRequestSummary;
 import com.ewaste.entity.EwasteRequest;
 import com.ewaste.entity.RequestCondition;
@@ -16,6 +7,17 @@ import com.ewaste.entity.RequestStatus;
 import com.ewaste.entity.User;
 import com.ewaste.repository.EwasteRequestRepository;
 import com.ewaste.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class EwasteRequestService {
@@ -24,10 +26,16 @@ public class EwasteRequestService {
 
     private final EwasteRequestRepository requestRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
-    public EwasteRequestService(EwasteRequestRepository requestRepository, UserRepository userRepository) {
+    public EwasteRequestService(
+            EwasteRequestRepository requestRepository,
+            UserRepository userRepository,
+            EmailService emailService
+    ) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     public EwasteRequestSummary createRequest(
@@ -69,6 +77,14 @@ public class EwasteRequestService {
         User user = getUserByEmail(email);
         return requestRepository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
+    public List<EwasteRequestSummary> getAllRequests() {
+        return requestRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(EwasteRequest::getCreatedAt).reversed())
                 .map(this::toSummary)
                 .toList();
     }
@@ -142,6 +158,50 @@ public class EwasteRequestService {
         EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
         requestRepository.delete(request);
+    }
+
+    public EwasteRequestSummary adminUpdateRequest(
+            Long requestId,
+            RequestStatus status,
+            LocalDate pickupDate,
+            LocalTime pickupTime,
+            String pickupPersonnelName
+    ) {
+        EwasteRequest request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+
+        if (status == RequestStatus.SCHEDULED) {
+            if (pickupDate == null || pickupTime == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pickupDate and pickupTime are required for scheduling");
+            }
+            request.setPickupDate(pickupDate);
+            request.setPickupTime(pickupTime);
+            request.setPickupPersonnelName(isBlank(pickupPersonnelName) ? null : pickupPersonnelName.trim());
+            request.setStatus(RequestStatus.SCHEDULED);
+
+            emailService.sendPickupScheduleEmail(
+                    request.getUser().getEmail(),
+                    request.getId(),
+                    pickupDate,
+                    pickupTime,
+                    request.getPickupPersonnelName()
+            );
+        } else {
+            request.setStatus(status);
+            if (status == RequestStatus.REJECTED) {
+                request.setPickupDate(null);
+                request.setPickupTime(null);
+                request.setPickupPersonnelName(null);
+            }
+            emailService.sendStatusUpdateEmail(
+                    request.getUser().getEmail(),
+                    request.getId(),
+                    status.name()
+            );
+        }
+
+        EwasteRequest saved = requestRepository.save(request);
+        return toSummary(saved);
     }
 
     private User getUserByEmail(String email) {
@@ -229,6 +289,11 @@ public class EwasteRequestService {
                 request.getPickupAddress(),
                 request.getAdditionalRemarks(),
                 request.getStatus(),
+                request.getPickupDate(),
+                request.getPickupTime(),
+                request.getPickupPersonnelName(),
+                request.getUser() == null ? null : request.getUser().getName(),
+                request.getUser() == null ? null : request.getUser().getEmail(),
                 request.getCreatedAt(),
                 request.getUpdatedAt()
         );

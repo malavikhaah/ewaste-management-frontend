@@ -5,6 +5,7 @@ import com.ewaste.dto.ChangePasswordRequest;
 import com.ewaste.dto.ResetPasswordRequest;
 import com.ewaste.entity.PendingUser;
 import com.ewaste.entity.User;
+import com.ewaste.entity.UserRole;
 import com.ewaste.repository.PendingUserRepository;
 import com.ewaste.repository.UserRepository;
 import com.ewaste.security.JwtService;
@@ -95,7 +96,7 @@ public class UserService {
         user.setPassword(pending.getPassword());
         user.setPhone(pending.getPhone());
         user.setIsVerified(true);
-        user.setRole(User.Role.ROLE_USER);
+        user.setRole(UserRole.USER);
 
         userRepo.save(user);
         pendingRepo.delete(pending);
