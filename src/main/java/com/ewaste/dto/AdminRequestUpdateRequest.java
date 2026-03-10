@@ -9,6 +9,7 @@ public class AdminRequestUpdateRequest {
     private LocalDate pickupDate;
     private LocalTime pickupTime;
     private String pickupPersonnelName;
+    private String rejectionReason;
 
     public String getStatus() {
         return status;
@@ -40,5 +41,13 @@ public class AdminRequestUpdateRequest {
 
     public void setPickupPersonnelName(String pickupPersonnelName) {
         this.pickupPersonnelName = pickupPersonnelName;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 }

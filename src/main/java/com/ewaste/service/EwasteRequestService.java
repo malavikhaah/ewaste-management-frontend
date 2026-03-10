@@ -153,6 +153,18 @@ public class EwasteRequestService {
         return new RequestImagePayload(imageData.contentType(), base64);
     }
 
+    public RequestImagePayload getAdminRequestImagePayloadById(Long requestId) {
+        EwasteRequest request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+
+        if (request.getImageData() == null || request.getImageData().length == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Request image not found");
+        }
+
+        String base64 = Base64.getEncoder().encodeToString(request.getImageData());
+        return new RequestImagePayload(request.getImageContentType(), base64);
+    }
+
     public void deleteRequest(String email, Long requestId) {
         User user = getUserByEmail(email);
         EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
@@ -165,7 +177,8 @@ public class EwasteRequestService {
             RequestStatus status,
             LocalDate pickupDate,
             LocalTime pickupTime,
-            String pickupPersonnelName
+            String pickupPersonnelName,
+            String rejectionReason
     ) {
         EwasteRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
@@ -177,20 +190,38 @@ public class EwasteRequestService {
             request.setPickupDate(pickupDate);
             request.setPickupTime(pickupTime);
             request.setPickupPersonnelName(isBlank(pickupPersonnelName) ? null : pickupPersonnelName.trim());
+            request.setRejectionReason(null);
             request.setStatus(RequestStatus.SCHEDULED);
 
             emailService.sendPickupScheduleEmail(
                     request.getUser().getEmail(),
                     request.getId(),
+                    request.getDeviceType() + " — " + request.getBrand() + " " + request.getModel(),
                     pickupDate,
                     pickupTime,
                     request.getPickupPersonnelName()
+            );
+        } else if (status == RequestStatus.REJECTED) {
+            if (isBlank(rejectionReason)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "rejectionReason is required for rejection");
+            }
+            request.setStatus(status);
+            request.setPickupDate(null);
+            request.setPickupTime(null);
+            request.setPickupPersonnelName(null);
+            request.setRejectionReason(rejectionReason.trim());
+            emailService.sendStatusUpdateEmail(
+                    request.getUser().getEmail(),
+                    request.getId(),
+                    status.name(),
+                    request.getRejectionReason()
             );
         } else {
             request.setStatus(status);
             request.setPickupDate(null);
             request.setPickupTime(null);
             request.setPickupPersonnelName(null);
+            request.setRejectionReason(null);
             emailService.sendStatusUpdateEmail(
                     request.getUser().getEmail(),
                     request.getId(),
@@ -290,6 +321,7 @@ public class EwasteRequestService {
                 request.getPickupDate(),
                 request.getPickupTime(),
                 request.getPickupPersonnelName(),
+                request.getRejectionReason(),
                 request.getUser() == null ? null : request.getUser().getName(),
                 request.getUser() == null ? null : request.getUser().getEmail(),
                 request.getCreatedAt(),

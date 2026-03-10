@@ -8,6 +8,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -53,8 +56,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         final String token = authHeader.substring(7);
-        final String username = jwtService.extractUsername(token);
-        final String tokenRole = jwtService.extractClaim(token, claims -> claims.get("role", String.class));
+        final String username;
+        final String tokenRole;
+
+        try {
+            username = jwtService.extractUsername(token);
+            tokenRole = jwtService.extractClaim(token, claims -> claims.get("role", String.class));
+        } catch (ExpiredJwtException exception) {
+            SecurityContextHolder.clearContext();
+            writeUnauthorizedResponse(response, "Session expired. Please log in again.");
+            return;
+        } catch (JwtException | IllegalArgumentException exception) {
+            SecurityContextHolder.clearContext();
+            writeUnauthorizedResponse(response, "Invalid authentication token.");
+            return;
+        }
+
         final String effectiveRole = resolveRole(username, tokenRole);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -79,6 +96,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void writeUnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write("{\"message\":\"" + message.replace("\"", "\\\"") + "\"}");
     }
 
     private String resolveRole(String username, String tokenRole) {

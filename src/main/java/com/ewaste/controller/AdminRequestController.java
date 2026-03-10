@@ -30,6 +30,11 @@ public class AdminRequestController {
         return requestService.getAllRequests();
     }
 
+    @GetMapping("/{id}/image-data")
+    public EwasteRequestService.RequestImagePayload requestImageData(@PathVariable Long id) {
+        return requestService.getAdminRequestImagePayloadById(id);
+    }
+
     @PutMapping("/{id}")
     public EwasteRequestSummary updateRequest(
             @PathVariable Long id,
@@ -51,7 +56,8 @@ public class AdminRequestController {
                 status,
                 request.getPickupDate(),
                 request.getPickupTime(),
-                request.getPickupPersonnelName()
+                request.getPickupPersonnelName(),
+                request.getRejectionReason()
         );
     }
 }

@@ -78,6 +78,9 @@ public class EwasteRequest {
     @Column(length = 150)
     private String pickupPersonnelName;
 
+    @Column(length = 2000)
+    private String rejectionReason;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

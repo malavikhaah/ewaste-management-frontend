@@ -24,6 +24,7 @@ public class EwasteRequestSummary {
     private LocalDate pickupDate;
     private LocalTime pickupTime;
     private String pickupPersonnelName;
+    private String rejectionReason;
     private String requesterName;
     private String requesterEmail;
     private LocalDateTime createdAt;

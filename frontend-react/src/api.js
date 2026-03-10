@@ -13,6 +13,12 @@ export async function apiRequest(path, options = {}) {
     }
 
     if (!response.ok) {
+      if (response.status === 401) {
+        const message = data.message || "Session expired. Please log in again.";
+        localStorage.removeItem("token");
+        throw new Error(message);
+      }
+
       const message =
         data.message ||
         `${response.status} ${response.statusText}` ||

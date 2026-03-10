@@ -7,7 +7,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 import java.time.LocalDate;
@@ -23,6 +22,10 @@ public class EmailService {
     @Value("${app.mail.enabled:true}")
     private boolean mailEnabled;
 
+    /* ----------------------------------------------------
+       OTP EMAIL
+    ---------------------------------------------------- */
+
     public void sendOtpEmail(String toEmail, String otp) {
 
         if (!mailEnabled) {
@@ -36,93 +39,70 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(toEmail);
-            helper.setSubject("♻️ Smart E-Waste Management — Email Verification OTP");
+            helper.setSubject("♻ Smart E-Waste Management — Email Verification OTP");
 
             String body = """
-                <html>
-                <body style="font-family: Arial, sans-serif;
-                             background-color:#f4f6f8;
-                             padding:20px;">
+            <html>
+            <body style="font-family:Arial;background:#f4f6f8;padding:20px">
 
-                    <div style="
-                        max-width:600px;
-                        margin:auto;
-                        background:white;
-                        border-radius:10px;
-                        padding:30px;
-                        box-shadow:0 0 10px rgba(0,0,0,0.1);">
+            <div style="max-width:600px;margin:auto;background:white;padding:30px;border-radius:10px">
 
-                        <h2 style="
-                            color:#2e7d32;
-                            text-align:center;">
-                            ♻️ Smart E-Waste Management
-                        </h2>
+            <h2 style="text-align:center;color:#2e7d32">
+            ♻ Smart E-Waste Management
+            </h2>
 
-                        <p>Hello User,</p>
+            <p>Hello User,</p>
 
-                        <p>
-                            Thank you for registering with the
-                            <b>Smart E-Waste Collection & Management System</b>.
-                        </p>
+            <p>Please use the OTP below to verify your email.</p>
 
-                        <p>Please use the OTP below to verify your email:</p>
+            <div style="text-align:center;margin:25px 0">
 
-                        <div style="text-align:center; margin:30px 0;">
+            <span style="font-size:30px;background:#e8f5e9;
+            padding:15px 30px;border-radius:8px;font-weight:bold;color:#1b5e20">
 
-                            <span style="
-                                font-size:28px;
-                                letter-spacing:5px;
-                                background:#e8f5e9;
-                                padding:15px 25px;
-                                border-radius:8px;
-                                color:#1b5e20;
-                                font-weight:bold;">
-                                """ + otp + """
-                            </span>
+            """ + otp + """
 
-                        </div>
+            </span>
 
-                        <p>This OTP is valid for <b>5 minutes</b>.</p>
+            </div>
 
-                        <p>If you did not request this, please ignore this email.</p>
+            <p>This OTP is valid for <b>5 minutes</b>.</p>
 
-                        <hr style="margin:30px 0;">
+            <hr>
 
-                        <p style="
-                            font-size:12px;
-                            color:gray;
-                            text-align:center;">
-                            © 2026 Smart E-Waste Management System <br>
-                            Promoting Responsible Recycling 🌍
-                        </p>
+            <p style="font-size:12px;text-align:center;color:gray">
+            © 2026 Smart E-Waste Management System
+            </p>
 
-                    </div>
+            </div>
 
-                </body>
-                </html>
-                """;
+            </body>
+            </html>
+            """;
 
             helper.setText(body, true);
             mailSender.send(message);
 
-        } catch (MessagingException | MailException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /* ----------------------------------------------------
+       PICKUP SCHEDULE EMAIL
+    ---------------------------------------------------- */
+
     public void sendPickupScheduleEmail(
             String toEmail,
             Long requestId,
+            String deviceLabel,
             LocalDate pickupDate,
             LocalTime pickupTime,
             String personnelName
     ) {
 
         if (!mailEnabled) {
-            System.out.printf(
-                    "DEV MAIL pickup schedule -> %s | request=%d | %s %s | personnel=%s%n",
-                    toEmail, requestId, pickupDate, pickupTime, personnelName
-            );
+            System.out.println("DEV pickup schedule email");
             return;
         }
 
@@ -132,51 +112,86 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(toEmail);
-            helper.setSubject("E-Waste Pickup Scheduled");
+            helper.setSubject("🚚 Pickup Scheduled - E-Waste Loop");
 
-            String content = """
-                <p>Hello User,</p>
+            String slotLabel = formatPickupSlot(pickupTime);
 
-                <p>Your e-waste pickup has been successfully scheduled.</p>
+            String body = """
+            <html>
+            <body style="margin:0;padding:24px;background:#eef3ef;font-family:Arial">
 
-                <div style="
-                    background:#e8f5e9;
-                    padding:15px;
-                    border-radius:8px;
-                    margin:20px 0;">
+            <div style="max-width:560px;margin:auto;background:white;border:1px solid #d9e4dd">
 
-                    <p><b>Request ID:</b> #%d</p>
-                    <p><b>Pickup Date:</b> %s</p>
-                    <p><b>Pickup Time:</b> %s</p>
-                    <p><b>Pickup Personnel:</b> %s</p>
+            <div style="background:#2f776f;padding:22px;text-align:center;color:white;font-weight:bold;font-size:18px">
+            ♻ E-Waste Loop
+            </div>
 
-                </div>
+            <div style="padding:22px">
 
-                <p>Please ensure the device is ready for pickup.</p>
-                """.formatted(
+            <div style="font-size:28px">🚚</div>
+
+            <h2 style="margin-top:5px">Pickup Scheduled!</h2>
+
+            <p>Great news! A pickup has been scheduled for your e-waste request.</p>
+
+            <div style="border:1px solid #e3e9e4;border-radius:10px;padding:15px">
+
+            <p><b>Request ID:</b> #%d</p>
+
+            <p><b>Device:</b> %s</p>
+
+            <div style="background:#edf6ee;padding:12px;border-radius:8px">
+
+            <p><b>📅 Date:</b> %s</p>
+
+            <p><b>🕘 Time:</b> %s</p>
+
+            <p><b>👤 Contact Person:</b> %s</p>
+
+            </div>
+
+            </div>
+
+            </div>
+
+            </div>
+
+            </body>
+            </html>
+            """.formatted(
                     requestId,
+                    deviceLabel,
                     pickupDate,
-                    pickupTime,
+                    slotLabel,
                     personnelName == null ? "To be assigned" : personnelName
             );
-
-            String body = buildEmailTemplate("Pickup Scheduled", content);
 
             helper.setText(body, true);
             mailSender.send(message);
 
-        } catch (MessagingException | MailException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /* ----------------------------------------------------
+       STATUS UPDATE EMAIL
+    ---------------------------------------------------- */
+
+    // Wrapper method (fixes your compilation error)
     public void sendStatusUpdateEmail(String toEmail, Long requestId, String status) {
+        sendStatusUpdateEmail(toEmail, requestId, status, null);
+    }
+
+    public void sendStatusUpdateEmail(
+            String toEmail,
+            Long requestId,
+            String status,
+            String adminDetail
+    ) {
 
         if (!mailEnabled) {
-            System.out.printf(
-                    "DEV MAIL status update -> %s | request=%d | status=%s%n",
-                    toEmail, requestId, status
-            );
+            System.out.println("DEV status email");
             return;
         }
 
@@ -186,158 +201,120 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             String normalizedStatus =
-                    status == null ? "PENDING" : status.trim().toUpperCase(Locale.ROOT);
+                    status == null ? "PENDING" : status.toUpperCase(Locale.ROOT);
 
             helper.setTo(toEmail);
-            helper.setSubject("Smart E-Waste Management - " + statusHeadline(normalizedStatus));
 
-            String content = """
-                <p>Hello User,</p>
+            String subject = switch (normalizedStatus) {
+                case "REJECTED" -> "❌ Request Rejected";
+                case "PICKED_UP" -> "✅ Pickup Completed";
+                default -> "📢 Request Status Updated";
+            };
 
-                <p>%s</p>
+            helper.setSubject(subject);
 
-                <div style="
-                    background:#e8f5e9;
-                    padding:15px;
-                    border-radius:8px;
-                    margin:20px 0;">
+            String icon = switch (normalizedStatus) {
+                case "REJECTED" -> "❌";
+                case "PICKED_UP" -> "✅";
+                default -> "📢";
+            };
 
-                    <p><b>Request ID:</b> #%d</p>
-                    <p><b>Status:</b> %s</p>
+            String messageText = switch (normalizedStatus) {
+                case "REJECTED" -> "Unfortunately your request could not be approved.";
+                case "PICKED_UP" -> "Your e-waste has been successfully collected.";
+                default -> "Your request status has been updated.";
+            };
 
-                </div>
+            String body = """
+            <html>
+            <body style="margin:0;padding:24px;background:#eef3ef;font-family:Arial">
 
-                <p>%s</p>
-                """.formatted(
-                    statusMessage(normalizedStatus),
+            <div style="max-width:560px;margin:auto;background:white;border:1px solid #d9e4dd">
+
+            <div style="background:#2f776f;padding:22px;text-align:center;color:white;font-weight:bold;font-size:18px">
+            ♻ E-Waste Loop
+            </div>
+
+            <div style="padding:22px">
+
+            <div style="font-size:28px">%s</div>
+
+            <h2>%s</h2>
+
+            <p>%s</p>
+
+            <div style="border:1px solid #e3e9e4;border-radius:10px;padding:15px">
+
+            <p><b>Request ID:</b> #%d</p>
+
+            <p><b>Status:</b> %s</p>
+
+            </div>
+
+            <div style="margin-top:15px;background:#edf6ee;padding:12px;border-radius:8px">
+
+            <p><b>Details:</b></p>
+
+            <p>%s</p>
+
+            </div>
+
+            </div>
+
+            </div>
+
+            </body>
+            </html>
+            """.formatted(
+                    icon,
+                    titleCase(normalizedStatus),
+                    messageText,
                     requestId,
                     titleCase(normalizedStatus),
-                    nextStepText(normalizedStatus)
-            );
-
-            String body = buildEmailTemplate(
-                    statusHeadline(normalizedStatus),
-                    content
+                    adminDetail == null ? "Please check your dashboard for more details." : adminDetail
             );
 
             helper.setText(body, true);
             mailSender.send(message);
 
-        } catch (MessagingException | MailException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private String buildEmailTemplate(String title, String contentHtml) {
-
-        return """
-            <html>
-            <body style="font-family: Arial, sans-serif;
-                         background-color:#f4f6f8;
-                         padding:20px;">
-
-                <div style="
-                    max-width:600px;
-                    margin:auto;
-                    background:white;
-                    border-radius:10px;
-                    padding:30px;
-                    box-shadow:0 0 10px rgba(0,0,0,0.1);">
-
-                    <h2 style="
-                        color:#2e7d32;
-                        text-align:center;">
-                        ♻️ Smart E-Waste Management
-                    </h2>
-
-                    <h3 style="color:#1b5e20; text-align:center;">
-                        %s
-                    </h3>
-
-                    %s
-
-                    <hr style="margin:30px 0;">
-
-                    <p style="
-                        font-size:12px;
-                        color:gray;
-                        text-align:center;">
-                        © 2026 Smart E-Waste Management System <br>
-                        Promoting Responsible Recycling 🌍
-                    </p>
-
-                </div>
-
-            </body>
-            </html>
-            """.formatted(title, contentHtml);
-    }
-
-    private String statusMessage(String status) {
-        return switch (status) {
-            case "ACCEPTED" -> "Great news. Your request has been accepted by our team.";
-            case "REJECTED" -> "Your request could not be approved at this time.";
-            case "SCHEDULED", "PICKUP_SCHEDULED" ->
-                    "Your pickup has been planned and moved to scheduled state.";
-            case "PICKED_UP" ->
-                    "Pickup completed successfully. Thank you for recycling responsibly.";
-            case "SUBMITTED", "PENDING" ->
-                    "Your request is currently in review.";
-            default ->
-                    "There is an update on your e-waste pickup request.";
-        };
-    }
-
-    private String nextStepText(String status) {
-        return switch (status) {
-            case "ACCEPTED" ->
-                    "You will receive scheduling details shortly.";
-            case "REJECTED" ->
-                    "Please review request details and submit a fresh request if needed.";
-            case "SCHEDULED", "PICKUP_SCHEDULED" ->
-                    "Keep the items packed and ready before pickup time.";
-            case "PICKED_UP" ->
-                    "No action required from your side.";
-            case "SUBMITTED", "PENDING" ->
-                    "Our admin team will review and notify you soon.";
-            default ->
-                    "Please check your dashboard for complete request details.";
-        };
-    }
-
-    private String statusHeadline(String status) {
-        return switch (status) {
-            case "ACCEPTED" -> "Request Accepted";
-            case "REJECTED" -> "Request Rejected";
-            case "SCHEDULED", "PICKUP_SCHEDULED" -> "Pickup Scheduled";
-            case "PICKED_UP" -> "Pickup Completed";
-            case "SUBMITTED", "PENDING" -> "Request In Review";
-            default -> "Status Updated";
-        };
-    }
+    /* ----------------------------------------------------
+       HELPERS
+    ---------------------------------------------------- */
 
     private String titleCase(String value) {
 
-        String[] parts = value.toLowerCase(Locale.ROOT).split("_");
+        String[] parts = value.toLowerCase().split("_");
+
         StringBuilder out = new StringBuilder();
 
         for (String part : parts) {
 
-            if (part.isBlank()) {
-                continue;
-            }
+            if (out.length() > 0) out.append(" ");
 
-            if (out.length() > 0) {
-                out.append(' ');
-            }
-
-            out.append(Character.toUpperCase(part.charAt(0)));
-
-            if (part.length() > 1) {
-                out.append(part.substring(1));
-            }
+            out.append(Character.toUpperCase(part.charAt(0)))
+                    .append(part.substring(1));
         }
 
-        return out.length() == 0 ? value : out.toString();
+        return out.toString();
+    }
+
+    private String formatPickupSlot(LocalTime pickupTime) {
+
+        if (pickupTime == null) return "To be assigned";
+
+        return switch (pickupTime.toString()) {
+
+            case "09:00" -> "Morning (9:00 AM - 12:00 PM)";
+            case "12:00" -> "Noon (12:00 PM - 03:00 PM)";
+            case "15:00" -> "Afternoon (3:00 PM - 06:00 PM)";
+            case "18:00" -> "Evening (6:00 PM - 09:00 PM)";
+
+            default -> pickupTime.toString();
+        };
     }
 }
