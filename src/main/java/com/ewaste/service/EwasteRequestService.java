@@ -1,5 +1,18 @@
 package com.ewaste.service;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.ewaste.dto.EwasteRequestSummary;
 import com.ewaste.entity.EwasteRequest;
 import com.ewaste.entity.RequestCondition;
@@ -7,17 +20,6 @@ import com.ewaste.entity.RequestStatus;
 import com.ewaste.entity.User;
 import com.ewaste.repository.EwasteRequestRepository;
 import com.ewaste.repository.UserRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.List;
 
 @Service
 public class EwasteRequestService {
@@ -47,12 +49,15 @@ public class EwasteRequestService {
             Integer quantity,
             String pickupAddress,
             String additionalRemarks,
-            MultipartFile image
+            MultipartFile[] images
     ) {
+
         User user = getUserByEmail(email);
-        validateRequestInput(deviceType, brand, model, condition, quantity, pickupAddress, image);
+
+        validateRequestInput(deviceType, brand, model, condition, quantity, pickupAddress, images);
 
         EwasteRequest request = new EwasteRequest();
+
         request.setUser(user);
         request.setDeviceType(deviceType.trim());
         request.setBrand(brand.trim());
@@ -62,19 +67,44 @@ public class EwasteRequestService {
         request.setPickupAddress(pickupAddress.trim());
         request.setAdditionalRemarks(additionalRemarks == null ? null : additionalRemarks.trim());
 
+        List<String> imageList = new ArrayList<>();
+        List<String> typeList = new ArrayList<>();
+
         try {
-            request.setImageData(image.getBytes());
+
+            for (MultipartFile image : images) {
+
+                if (image == null || image.isEmpty()) continue;
+
+                String base64 = Base64.getEncoder().encodeToString(image.getBytes());
+
+                imageList.add(base64);
+
+                typeList.add(
+                        image.getContentType() == null
+                                ? "application/octet-stream"
+                                : image.getContentType()
+                );
+            }
+
         } catch (IOException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not read uploaded image");
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not read uploaded images");
+
         }
-        request.setImageContentType(image.getContentType() == null ? "application/octet-stream" : image.getContentType());
+
+        request.setImages(imageList);
+        request.setImageContentTypes(typeList);
 
         EwasteRequest saved = requestRepository.save(request);
+
         return toSummary(saved);
     }
 
     public List<EwasteRequestSummary> getMyRequests(String email) {
+
         User user = getUserByEmail(email);
+
         return requestRepository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
                 .map(this::toSummary)
@@ -82,6 +112,7 @@ public class EwasteRequestService {
     }
 
     public List<EwasteRequestSummary> getAllRequests() {
+
         return requestRepository.findAll()
                 .stream()
                 .sorted(Comparator.comparing(EwasteRequest::getCreatedAt).reversed())
@@ -90,9 +121,12 @@ public class EwasteRequestService {
     }
 
     public EwasteRequestSummary getRequestById(String email, Long requestId) {
+
         User user = getUserByEmail(email);
+
         EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+
         return toSummary(request);
     }
 
@@ -106,18 +140,21 @@ public class EwasteRequestService {
             Integer quantity,
             String pickupAddress,
             String additionalRemarks,
-            MultipartFile image
+            MultipartFile[] images
     ) {
+
         User user = getUserByEmail(email);
+
         EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
 
         if (!request.getStatus().isPendingState()) {
-    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Only pending requests can be updated");
-}
 
-        validateUpdateInput(deviceType, brand, model, condition, quantity, pickupAddress, image);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending requests can be updated");
+
+        }
+
+        validateUpdateInput(deviceType, brand, model, condition, quantity, pickupAddress, images);
 
         request.setDeviceType(deviceType.trim());
         request.setBrand(brand.trim());
@@ -127,50 +164,44 @@ public class EwasteRequestService {
         request.setPickupAddress(pickupAddress.trim());
         request.setAdditionalRemarks(additionalRemarks == null ? null : additionalRemarks.trim());
 
-        if (image != null && !image.isEmpty()) {
+        if (images != null && images.length > 0) {
+
+            List<String> imageList = new ArrayList<>();
+            List<String> typeList = new ArrayList<>();
+
             try {
-                request.setImageData(image.getBytes());
+
+                for (MultipartFile image : images) {
+
+                    if (image == null || image.isEmpty()) continue;
+
+                    String base64 = Base64.getEncoder().encodeToString(image.getBytes());
+
+                    imageList.add(base64);
+
+                    typeList.add(
+                            image.getContentType() == null
+                                    ? "application/octet-stream"
+                                    : image.getContentType()
+                    );
+                }
+
             } catch (IOException exception) {
+
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not read uploaded image");
+
             }
-            request.setImageContentType(image.getContentType() == null ? "application/octet-stream" : image.getContentType());
+
+            request.setImages(imageList);
+            request.setImageContentTypes(typeList);
         }
 
         EwasteRequest saved = requestRepository.save(request);
+
         return toSummary(saved);
     }
 
-    public RequestImageData getRequestImageById(String email, Long requestId) {
-        User user = getUserByEmail(email);
-        EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
-        return new RequestImageData(request.getImageContentType(), request.getImageData());
-    }
-
-    public RequestImagePayload getRequestImagePayloadById(String email, Long requestId) {
-        RequestImageData imageData = getRequestImageById(email, requestId);
-        String base64 = Base64.getEncoder().encodeToString(imageData.data());
-        return new RequestImagePayload(imageData.contentType(), base64);
-    }
-
-    public RequestImagePayload getAdminRequestImagePayloadById(Long requestId) {
-        EwasteRequest request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
-
-        if (request.getImageData() == null || request.getImageData().length == 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Request image not found");
-        }
-
-        String base64 = Base64.getEncoder().encodeToString(request.getImageData());
-        return new RequestImagePayload(request.getImageContentType(), base64);
-    }
-
-    public void deleteRequest(String email, Long requestId) {
-        User user = getUserByEmail(email);
-        EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
-        requestRepository.delete(request);
-    }
+    /* ---------- ADMIN UPDATE METHOD ---------- */
 
     public EwasteRequestSummary adminUpdateRequest(
             Long requestId,
@@ -180,66 +211,98 @@ public class EwasteRequestService {
             String pickupPersonnelName,
             String rejectionReason
     ) {
+
         EwasteRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
 
-        if (status.isScheduledState()) {
+        if (status == RequestStatus.REJECTED) {
+
+            request.setStatus(RequestStatus.REJECTED);
+            request.setRejectionReason(rejectionReason);
+            request.setPickupDate(null);
+            request.setPickupTime(null);
+            request.setPickupPersonnelName(null);
+
+        } else if (status.isScheduledState()) {
+
             if (pickupDate == null || pickupTime == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pickupDate and pickupTime are required for scheduling");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pickupDate and pickupTime required");
             }
+
+            request.setStatus(RequestStatus.SCHEDULED);
             request.setPickupDate(pickupDate);
             request.setPickupTime(pickupTime);
-            request.setPickupPersonnelName(isBlank(pickupPersonnelName) ? null : pickupPersonnelName.trim());
+            request.setPickupPersonnelName(pickupPersonnelName);
             request.setRejectionReason(null);
-            request.setStatus(RequestStatus.SCHEDULED);
 
-            emailService.sendPickupScheduleEmail(
-                    request.getUser().getEmail(),
-                    request.getId(),
-                    request.getDeviceType() + " — " + request.getBrand() + " " + request.getModel(),
-                    pickupDate,
-                    pickupTime,
-                    request.getPickupPersonnelName()
-            );
-        } else if (status == RequestStatus.REJECTED) {
-            if (isBlank(rejectionReason)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "rejectionReason is required for rejection");
-            }
-            request.setStatus(status);
-            request.setPickupDate(null);
-            request.setPickupTime(null);
-            request.setPickupPersonnelName(null);
-            request.setRejectionReason(rejectionReason.trim());
-            emailService.sendStatusUpdateEmail(
-                    request.getUser().getEmail(),
-                    request.getId(),
-                    status.name(),
-                    request.getRejectionReason()
-            );
         } else {
+
             request.setStatus(status);
-            request.setPickupDate(null);
-            request.setPickupTime(null);
-            request.setPickupPersonnelName(null);
-            request.setRejectionReason(null);
-            emailService.sendStatusUpdateEmail(
-                    request.getUser().getEmail(),
-                    request.getId(),
-                    status.name()
-            );
         }
 
         EwasteRequest saved = requestRepository.save(request);
+
         return toSummary(saved);
     }
 
-    private User getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+    public RequestImageData getRequestImageById(String email, Long requestId) {
+
+        User user = getUserByEmail(email);
+
+        EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+
+        if (request.getImages() == null || request.getImages().isEmpty()) {
+
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Request image not found");
+
         }
-        return user;
+
+        byte[] imageBytes = Base64.getDecoder().decode(request.getImages().get(0));
+
+        return new RequestImageData(
+                request.getImageContentTypes().get(0),
+                imageBytes
+        );
     }
+
+    public RequestImagePayload getRequestImagePayloadById(String email, Long requestId) {
+
+        RequestImageData imageData = getRequestImageById(email, requestId);
+
+        String base64 = Base64.getEncoder().encodeToString(imageData.data());
+
+        return new RequestImagePayload(imageData.contentType(), base64);
+    }
+
+    public RequestImagePayload getAdminRequestImagePayloadById(Long requestId) {
+
+        EwasteRequest request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+
+        if (request.getImages() == null || request.getImages().isEmpty()) {
+
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Request image not found");
+
+        }
+
+        return new RequestImagePayload(
+                request.getImageContentTypes().get(0),
+                request.getImages().get(0)
+        );
+    }
+
+    public void deleteRequest(String email, Long requestId) {
+
+        User user = getUserByEmail(email);
+
+        EwasteRequest request = requestRepository.findByIdAndUser(requestId, user)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+
+        requestRepository.delete(request);
+    }
+
+    /* ---------- VALIDATION METHODS ---------- */
 
     private void validateRequestInput(
             String deviceType,
@@ -248,23 +311,19 @@ public class EwasteRequestService {
             String condition,
             Integer quantity,
             String pickupAddress,
-            MultipartFile image
+            MultipartFile[] images
     ) {
+
         if (isBlank(deviceType) || isBlank(brand) || isBlank(model) || isBlank(condition) || isBlank(pickupAddress)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All required fields must be provided");
         }
+
         if (quantity == null || quantity < 1 || quantity > 1000) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be between 1 and 1000");
         }
-        if (image == null || image.isEmpty()) {
+
+        if (images == null || images.length == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image upload is required");
-        }
-        if (image.getSize() > MAX_IMAGE_SIZE_BYTES) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image size must be up to 5 MB");
-        }
-        String contentType = image.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only image files are allowed");
         }
     }
 
@@ -275,39 +334,52 @@ public class EwasteRequestService {
             String condition,
             Integer quantity,
             String pickupAddress,
-            MultipartFile image
+            MultipartFile[] images
     ) {
+
         if (isBlank(deviceType) || isBlank(brand) || isBlank(model) || isBlank(condition) || isBlank(pickupAddress)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All required fields must be provided");
         }
+
         if (quantity == null || quantity < 1 || quantity > 1000) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be between 1 and 1000");
         }
-        if (image == null || image.isEmpty()) {
-            return;
+    }
+
+    private User getUserByEmail(String email) {
+
+        User user = userRepository.findByEmail(email);
+
+        if (user == null) {
+
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+
         }
-        if (image.getSize() > MAX_IMAGE_SIZE_BYTES) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image size must be up to 5 MB");
-        }
-        String contentType = image.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only image files are allowed");
-        }
+
+        return user;
     }
 
     private RequestCondition parseCondition(String value) {
+
         try {
+
             return RequestCondition.valueOf(value.trim().toUpperCase());
+
         } catch (IllegalArgumentException exception) {
+
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid condition value");
+
         }
     }
 
     private boolean isBlank(String value) {
+
         return value == null || value.isBlank();
+
     }
 
     private EwasteRequestSummary toSummary(EwasteRequest request) {
+
         return new EwasteRequestSummary(
                 request.getId(),
                 request.getDeviceType(),
@@ -329,9 +401,7 @@ public class EwasteRequestService {
         );
     }
 
-    public record RequestImageData(String contentType, byte[] data) {
-    }
+    public record RequestImageData(String contentType, byte[] data) {}
 
-    public record RequestImagePayload(String contentType, String base64Data) {
-    }
+    public record RequestImagePayload(String contentType, String base64Data) {}
 }

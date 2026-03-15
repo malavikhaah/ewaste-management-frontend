@@ -107,7 +107,7 @@ export default function Requests({ mode = "all" }) {
     pickupAddress: "",
     additionalRemarks: ""
   });
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -435,7 +435,10 @@ export default function Requests({ mode = "all" }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    if (!imageFile) { setStepError("Proof image is required."); return; }
+    if (imageFiles.length === 0) {
+  setStepError("At least one proof image is required.");
+  return;
+}
     setLoading(true);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -453,7 +456,9 @@ export default function Requests({ mode = "all" }) {
     payload.append("quantity", String(form.quantity));
     payload.append("pickupAddress", form.pickupAddress.trim());
     if (form.additionalRemarks.trim()) payload.append("additionalRemarks", form.additionalRemarks.trim());
-    payload.append("image", imageFile);
+    imageFiles.forEach((file) => {
+  payload.append("images", file);
+});
 
     try {
       await apiRequest("/requests", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: payload });
@@ -621,29 +626,43 @@ export default function Requests({ mode = "all" }) {
                     </div>
 
                     <div className="input-group">
-                      <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}><FaFileUpload style={{ marginRight: '10px' }} /> PROOF IMAGE (REQUIRED)</label>
-                      <div style={{ 
-                        border: '2px dashed var(--border)', 
-                        borderRadius: '14px', 
-                        padding: '32px', 
-                        textAlign: 'center', 
-                        background: imageFile ? 'rgba(16, 185, 129, 0.05)' : 'rgba(148, 163, 184, 0.05)',
-                        cursor: 'pointer'
-                      }} onClick={() => document.getElementById('image-input').click()}>
-                        <input id="image-input" type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => setImageFile(e.target.files[0])} />
-                        {imageFile ? (
-                          <div style={{ color: '#10b981', fontWeight: '700' }}>
-                            <FaCheckCircle size={24} style={{ marginBottom: '8px' }} /><br/>
-                            File Selected: {imageFile.name}
-                          </div>
-                        ) : (
-                          <div style={{ color: 'var(--ink-2)' }}>
-                            <FaImage size={32} style={{ marginBottom: '12px', opacity: 0.5 }} /><br/>
-                            Click to upload device photo
-                          </div>
-                        )}
-                      </div>
-                    </div>
+  <label style={{ color: 'var(--ink-1)', fontWeight: '700', fontSize: '14px' }}>
+    <FaFileUpload style={{ marginRight: '10px' }} /> PROOF IMAGE (REQUIRED)
+  </label>
+
+  <div
+    style={{
+      border: '2px dashed var(--border)',
+      borderRadius: '14px',
+      padding: '32px',
+      textAlign: 'center',
+      background: imageFiles.length > 0 ? 'rgba(16,185,129,0.05)' : 'rgba(148,163,184,0.05)',
+      cursor: 'pointer'
+    }}
+    onClick={() => document.getElementById('image-input').click()}
+  >
+    <input
+      id="image-input"
+      type="file"
+      accept="image/*"
+      multiple
+      style={{ display: 'none' }}
+      onChange={(e) => setImageFiles(Array.from(e.target.files))}
+    />
+
+    {imageFiles.length > 0 ? (
+      <div style={{ color: '#10b981', fontWeight: '700' }}>
+        <FaCheckCircle size={24} style={{ marginBottom: '8px' }} /><br/>
+        {imageFiles.length} file(s) selected
+      </div>
+    ) : (
+      <div style={{ color: 'var(--ink-2)' }}>
+        <FaImage size={32} style={{ marginBottom: '12px', opacity: 0.5 }} /><br/>
+        Click to upload device photo(s)
+      </div>
+    )}
+  </div>
+</div>
 
                     <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between' }}>
                       <button className="btn" style={{ background: 'rgba(148, 163, 184, 0.1)', color: 'var(--ink-2)', padding: '18px 40px', fontSize: '16px', fontWeight: '700', borderRadius: '14px' }} onClick={handlePreviousStep} disabled={loading}>

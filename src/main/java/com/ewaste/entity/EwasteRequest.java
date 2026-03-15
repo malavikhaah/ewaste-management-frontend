@@ -3,8 +3,11 @@ package com.ewaste.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,7 +16,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -21,6 +23,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 @Entity
 @Table(name = "ewaste_requests")
 @Data
@@ -52,12 +55,19 @@ public class EwasteRequest {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Lob
-    @Column(nullable = false, columnDefinition = "LONGBLOB")
-    private byte[] imageData;
+    /* -------- MULTIPLE IMAGES SUPPORT -------- */
 
-    @Column(nullable = false)
-    private String imageContentType;
+    @ElementCollection
+    @CollectionTable(name = "ewaste_request_images", joinColumns = @JoinColumn(name = "request_id"))
+    @Column(name = "image_data", columnDefinition = "LONGTEXT")
+    private List<String> images;
+
+    @ElementCollection
+    @CollectionTable(name = "ewaste_request_image_types", joinColumns = @JoinColumn(name = "request_id"))
+    @Column(name = "image_content_type")
+    private List<String> imageContentTypes;
+
+    /* ----------------------------------------- */
 
     @Column(nullable = false, length = 1000)
     private String pickupAddress;
@@ -92,6 +102,7 @@ public class EwasteRequest {
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
+
         if (status == null) {
             status = RequestStatus.PENDING;
         }
