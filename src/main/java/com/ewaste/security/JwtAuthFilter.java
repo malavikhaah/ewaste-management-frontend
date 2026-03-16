@@ -1,28 +1,28 @@
 package com.ewaste.security;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ewaste.entity.User;
 import com.ewaste.repository.UserRepository;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.ArrayList;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -43,7 +43,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        // ✅ Skip JWT check for authentication endpoints
+        if (path.startsWith("/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String authHeader = request.getHeader("Authorization");
+
         final boolean isAdminPath = request.getRequestURI() != null
                 && request.getRequestURI().startsWith("/admin/");
 
@@ -56,6 +65,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         final String token = authHeader.substring(7);
+
         final String username;
         final String tokenRole;
 
@@ -90,8 +100,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 log.debug("Admin auth resolved: user={}, tokenRole={}, effectiveRole={}, authorities={}",
                         username, tokenRole, effectiveRole, authToken.getAuthorities());
             }
+
         } else if (isAdminPath) {
-            log.debug("Admin auth skipped: user={}, existingAuth={}", username,
+            log.debug("Admin auth skipped: user={}, existingAuth={}",
+                    username,
                     SecurityContextHolder.getContext().getAuthentication() != null);
         }
 
@@ -109,27 +121,35 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (username == null || username.isBlank()) {
             return tokenRole;
         }
+
         User user = userRepository.findByEmail(username);
+
         if (user != null && user.getRole() != null) {
             return user.getRole().name();
         }
+
         return tokenRole;
     }
 
     private List<SimpleGrantedAuthority> buildAuthorities(String roleClaim) {
+
         if (roleClaim == null || roleClaim.isBlank()) {
             return List.of();
         }
 
         String trimmed = roleClaim.trim();
+
         String withoutPrefix = trimmed.startsWith("ROLE_")
                 ? trimmed.substring("ROLE_".length())
                 : trimmed;
+
         String withPrefix = "ROLE_" + withoutPrefix;
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
         authorities.add(new SimpleGrantedAuthority(withoutPrefix));
         authorities.add(new SimpleGrantedAuthority(withPrefix));
+
         return authorities;
     }
 }
