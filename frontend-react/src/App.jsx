@@ -1,6 +1,5 @@
 ﻿import { Routes, Route, Navigate } from "react-router-dom";
 import { useTheme } from "./hooks/useTheme";
-import ThemeToggle from "./components/ThemeToggle";
 import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
@@ -22,7 +21,6 @@ export default function App() {
 
   return (
     <>
-      <ThemeToggle />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/home" element={<Home />} />

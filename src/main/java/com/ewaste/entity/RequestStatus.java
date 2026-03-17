@@ -4,7 +4,7 @@ public enum RequestStatus {
     SUBMITTED,
     PENDING,
     ACCEPTED,
-    REJECTED,
+    REJECTED,                                                                                                                                                                                            
     SCHEDULED,
     PICKUP_SCHEDULED,
     PICKED_UP
