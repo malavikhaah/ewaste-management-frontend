@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function LandingPage() {
   return (
@@ -32,6 +33,7 @@ export default function LandingPage() {
             <Link to="/register" className="landing-btn landing-btn-primary">
               Register
             </Link>
+            <ThemeToggle />
           </div>
         </div>
       </header>
